@@ -3,29 +3,8 @@ name: Programs
 on:
   push:
     branches: [master]
-    paths-ignore:
-      - ".husky"
-      - ".vscode"
-      - ".github/workflows/sdks.yml"
-      - ".github/workflows/sdk-release.yml"
-      - "packages/etl/**"
-      - "packages/farm-airdrop/**"
-      - "yarn.lock"
-      - "*.nix"
-      - flake.lock
-
   pull_request:
     branches: [master]
-    paths-ignore:
-      - ".husky"
-      - ".vscode"
-      - ".github/workflows/sdks.yml"
-      - ".github/workflows/sdk-release.yml"
-      - "packages/etl/**"
-      - "packages/farm-airdrop/**"
-      - "yarn.lock"
-      - "*.nix"
-      - flake.lock
 
 env:
   CARGO_TERM_COLOR: always
