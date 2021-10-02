@@ -126,7 +126,6 @@ dist
 !.yarn/plugins
 !.yarn/releases
 !.yarn/sdks
-!.yarn/versions
 
 
 # End of https://www.toptal.com/developers/gitignore/api/node

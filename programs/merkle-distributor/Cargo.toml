@@ -1,6 +1,6 @@
 [package]
 name = "merkle-distributor"
-version = "0.1.0"
+version = "0.2.0"
 description = "A Solana program for distributing tokens according to a Merkle root."
 edition = "2018"
 homepage = "https://saber.so"
