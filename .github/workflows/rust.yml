@@ -1,0 +1,56 @@
+name: Rust
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - Anchor.toml
+      - .github/workflows/rust.yml
+      - lib/**
+      - programs/**
+      - Cargo.*
+  pull_request:
+    branches: [master]
+    paths:
+      - Anchor.toml
+      - .github/workflows/rust.yml
+      - lib/**
+      - programs/**
+      - Cargo.*
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_TOOLCHAIN: nightly-2021-09-24
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v1
+      - name: Run fmt
+        run: cargo fmt -- --check
+      - name: Run clippy
+        run: cargo clippy --all-targets -- --deny=warnings
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v1
+      - name: Run unit tests
+        run: cargo test --lib

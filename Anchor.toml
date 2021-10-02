@@ -1,0 +1,12 @@
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[programs.localnet]
+merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
+
+[scripts]
+test = "yarn ts-mocha -t 1000000"

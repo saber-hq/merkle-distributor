@@ -1,0 +1,32 @@
+[package]
+name = "merkle-distributor"
+version = "0.1.0"
+description = "A Solana program for distributing tokens according to a Merkle root."
+edition = "2018"
+homepage = "https://saber.so"
+repository = "https://github.com/saber-hq/merkle-distributor"
+authors = [
+    "Michael Huang <michaelhly@gmail.com>",
+    "Ian Macalinao <ian@ship.capital>"
+]
+license = "GPL-3.0"
+keywords = ["solana", "airdrop", "token"]
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "merkle_distributor"
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.16.2"
+anchor-spl = "0.16.2"
+solana-program = "1.7.11"
+spl-associated-token-account = { version = "1.0.3", features = [
+    "no-entrypoint"
+] }
+vipers = "1.0.0"

@@ -1,0 +1,100 @@
+name: Programs
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - ".husky"
+      - ".vscode"
+      - ".github/workflows/sdks.yml"
+      - ".github/workflows/sdk-release.yml"
+      - "packages/etl/**"
+      - "packages/farm-airdrop/**"
+      - "yarn.lock"
+      - "*.nix"
+      - flake.lock
+
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - ".husky"
+      - ".vscode"
+      - ".github/workflows/sdks.yml"
+      - ".github/workflows/sdk-release.yml"
+      - "packages/etl/**"
+      - "packages/farm-airdrop/**"
+      - "yarn.lock"
+      - "*.nix"
+      - flake.lock
+
+env:
+  CARGO_TERM_COLOR: always
+  SOLANA_VERSION: "1.7.11"
+  RUST_TOOLCHAIN: nightly-2021-09-24
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Install Rust
+      - name: Install Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: Swatinem/rust-cache@v1
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config build-essential libudev-dev
+
+      - uses: cachix/install-nix-action@v14
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
+          install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: saber
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      # Install Solana
+      - name: Cache Solana binaries
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/solana
+          key: ${{ runner.os }}-${{ env.SOLANA_VERSION }}
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
+          solana --version
+          echo "Generating keypair..."
+          solana-keygen new -o "$HOME/.config/solana/id.json" --no-passphrase --silent
+
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        id: cache-node-modules
+        with:
+          path: |
+            ./.yarn
+            ./node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+          registry-url: "https://npm.pkg.github.com"
+      - run: yarn install
+
+      - name: Build program
+        run: nix shell .#ci --command anchor build
+      - run: nix shell .#ci --command yarn idl:generate
+      - run: nix shell .#ci --command yarn build
+      - run: nix shell .#ci --command yarn test

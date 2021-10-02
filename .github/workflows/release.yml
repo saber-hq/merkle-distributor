@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  CARGO_TERM_COLOR: always
+  SOLANA_VERSION: "1.7.11"
+  RUST_TOOLCHAIN: nightly-2021-09-01
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+jobs:
+  release-sdk:
+    runs-on: ubuntu-latest
+    name: Release SDK on NPM
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: cachix/install-nix-action@v14
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
+          install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: saber
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          always-auth: true
+          node-version: 14.x
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        id: cache-node-modules
+        with:
+          path: |
+            ./.yarn
+            ./node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: Install Yarn dependencies
+        run: yarn install
+      - name: Parse IDLs
+        run: nix shell .#ci --command yarn idl:generate
+      - run: yarn build
+      - run: |
+          echo 'npmAuthToken: "${NPM_AUTH_TOKEN}"' >> .yarnrc.yml
+          cat .yarnrc.yml
+      - name: Publish
+        run: yarn npm publish
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+  release-binaries:
+    runs-on: ubuntu-latest
+    name: Release verifiable binaries
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v14
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
+          install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: saber
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Build programs
+        run: nix shell .#ci --command anchor build -v
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/deploy/*
+            target/idl/*
+            target/verifiable/*
+
+  release-crate:
+    runs-on: ubuntu-latest
+    name: Release crate on crates.io
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: cachix/install-nix-action@v14
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
+          install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: saber
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Install Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: Swatinem/rust-cache@v1
+      - name: Install cargo-workspaces
+        run: cargo install cargo-workspaces || true
+      - name: Publish crates
+        run: cargo ws publish --from-git --yes --skip-published --token ${{ secrets.CARGO_PUBLISH_TOKEN }}

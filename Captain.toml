@@ -1,0 +1,23 @@
+[paths]
+artifacts = "~/proj/saber-hq/captain-artifacts"
+program_keypairs = "~/stableswap_deployments/program_keypairs"
+
+[networks.devnet]
+deployer = "~/stableswap_deployments/devnet/deployer.keypair.json"
+upgrade_authority = "H9XuKqszWYirDmXDQ12TZXGtxqUYYn4oi7FKzAm7RHGc"
+url = "https://api.devnet.solana.com"
+
+[networks.testnet]
+deployer = "~/stableswap_deployments/testnet/deployer.keypair.json"
+upgrade_authority = "H9XuKqszWYirDmXDQ12TZXGtxqUYYn4oi7FKzAm7RHGc"
+url = "https://api.testnet.solana.com"
+
+[networks.mainnet]
+deployer = "~/stableswap_deployments/mainnet-beta/deployer.keypair.json"
+upgrade_authority = "H9XuKqszWYirDmXDQ12TZXGtxqUYYn4oi7FKzAm7RHGc"
+url = "https://api.mainnet-beta.solana.com"
+
+[networks.localnet]
+deployer = "~/stableswap_deployments/devnet/deployer.keypair.json"
+upgrade_authority = "H9XuKqszWYirDmXDQ12TZXGtxqUYYn4oi7FKzAm7RHGc"
+url = "http://localhost:8899"
