@@ -5,7 +5,8 @@ let
 in pkgs.buildEnv {
   name = "ci";
   paths = with pkgs;
-    (pkgs.lib.optionals pkgs.stdenv.isLinux ([ libudev anchor ])) ++ [
+    (pkgs.lib.optionals pkgs.stdenv.isLinux ([ libudev ])) ++ [
+      anchor-0_17_0
       anchor-parse-idls
 
       # sdk

@@ -10,13 +10,14 @@ in pkgs.mkShell {
   ]);
   buildInputs = with pkgs;
     (pkgs.lib.optionals pkgs.stdenv.isLinux ([
-      # solana
       libudev
     ])) ++ [
+      anchor-0_17_0
+      spl-token-cli
+
       anchor-parse-idls
       rustup
       cargo-deps
-      # cargo-watch
       gh
 
       # sdk
@@ -34,10 +35,6 @@ in pkgs.mkShell {
       pkgs.darwin.apple_sdk.frameworks.AppKit
       pkgs.darwin.apple_sdk.frameworks.IOKit
       pkgs.darwin.apple_sdk.frameworks.Foundation
-    ]) ++ (pkgs.lib.optionals (pkgs.stdenv.isLinux || pkgs.stdenv.isAarch64) [
-      # for some reason these two only work on m1 macs
-      anchor
-      spl-token-cli
     ]);
   shellHook = ''
     export PATH=$PATH:$HOME/.cargo/bin
