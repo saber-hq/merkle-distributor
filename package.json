@@ -66,7 +66,8 @@
   },
   "dependencies": {
     "js-sha3": "^0.8.0",
-    "tiny-invariant": "^1.1.0"
+    "tiny-invariant": "^1.1.0",
+    "tslib": "^2.3.1"
   },
   "peerDependencies": {
     "@project-serum/anchor": "^0.17.0",
