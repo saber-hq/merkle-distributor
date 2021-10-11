@@ -29,4 +29,4 @@ solana-program = "1.7.11"
 spl-associated-token-account = { version = "1.0.3", features = [
     "no-entrypoint"
 ] }
-vipers = "1.0.0"
+vipers = "1.2.1"
