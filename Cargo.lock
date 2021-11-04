@@ -1249,13 +1249,12 @@ checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 
 [[package]]
 name = "vipers"
-version = "1.2.1"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8960b053a136ee9be9620d0e57c386803db236fa041255b3c6bf135bd7fae4d7"
+checksum = "acd0093f01aedc6999cfa99ef5fe45cf28b105f76c19a28d821c6739fc81fa4d"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "solana-program",
  "spl-associated-token-account",
 ]
 
