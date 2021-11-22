@@ -59,7 +59,7 @@ pub mod merkle_distributor {
         require!(claimant_account.is_signer, Unauthorized);
 
         // Verify the merkle proof.
-        let node = solana_program::keccak::hashv(&[
+        let node = anchor_lang::solana_program::keccak::hashv(&[
             &index.to_le_bytes(),
             &claimant_account.key().to_bytes(),
             &amount.to_le_bytes(),

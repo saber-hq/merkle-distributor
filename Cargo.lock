@@ -707,7 +707,6 @@ version = "0.2.2"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "solana-program",
  "spl-associated-token-account",
  "vipers",
 ]
