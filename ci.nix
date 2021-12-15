@@ -7,6 +7,7 @@ in pkgs.buildEnv {
   paths = with pkgs;
     (pkgs.lib.optionals pkgs.stdenv.isLinux ([ libudev ])) ++ [
       anchor-0_19_0
+      cargo-workspaces
       anchor-parse-idls
 
       # sdk
