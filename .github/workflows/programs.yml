@@ -71,9 +71,10 @@ jobs:
           node-version: "16"
           registry-url: "https://npm.pkg.github.com"
       - run: yarn install
+      - run: nix shell .#ci --command yarn idl:generate
+      - run: nix shell .#ci --command yarn typecheck
 
       - name: Build program
         run: nix shell .#ci --command anchor build
-      - run: nix shell .#ci --command yarn idl:generate
       - run: nix shell .#ci --command yarn build
       - run: nix shell .#ci --command yarn test

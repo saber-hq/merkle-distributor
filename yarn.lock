@@ -268,6 +268,7 @@ __metadata:
     "@saberhq/eslint-config": ^1.10.16
     "@saberhq/solana-contrib": ^1.10.16
     "@saberhq/token-utils": ^1.10.16
+    "@saberhq/tsconfig": ^1.10.16
     "@solana/spl-token": ^0.1.8
     "@solana/web3.js": ^1.31.0
     "@types/bn.js": ^5.1.0
@@ -332,6 +333,13 @@ __metadata:
     bn.js: ^5.2
     jsbi: ^3 || ^4
   checksum: f9cc7f6d29ddb4481e72aed3044467a0f76550be8c927474f44dc47d825483f8ede469fc1cf9c173d54fae476da3abd24cdfe48b0307e4f492bd35475d5b7f53
+  languageName: node
+  linkType: hard
+
+"@saberhq/tsconfig@npm:^1.10.16":
+  version: 1.10.16
+  resolution: "@saberhq/tsconfig@npm:1.10.16"
+  checksum: 205c058db62f9ed222a9e735419f3266989c89d810e109539e7bf1141a23c9bbc56024020db9d6f634c6743127b8f161f50766d89f116b5a6b47f0a535a6f374
   languageName: node
   linkType: hard
 
