@@ -2,7 +2,7 @@
 name = "merkle-distributor"
 version = "0.2.3"
 description = "A Solana program for distributing tokens according to a Merkle root."
-edition = "2018"
+edition = "2021"
 homepage = "https://saber.so"
 repository = "https://github.com/saber-hq/merkle-distributor"
 authors = [
