@@ -1,3 +1,6 @@
+anchor_version = "0.19.0"
+solana_version = "1.9.0"
+
 [registry]
 url = "https://anchor.projectserum.com"
 
@@ -18,4 +21,4 @@ merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
 merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
 
 [scripts]
-test = "yarn ts-mocha -t 1000000"
+test = "yarn mocha"

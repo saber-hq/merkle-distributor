@@ -9,10 +9,8 @@ in pkgs.mkShell {
     pkgs.darwin.apple_sdk.frameworks.Foundation
   ]);
   buildInputs = with pkgs;
-    (pkgs.lib.optionals pkgs.stdenv.isLinux ([
-      libudev
-    ])) ++ [
-      anchor-0_17_0
+    (pkgs.lib.optionals pkgs.stdenv.isLinux ([ libudev ])) ++ [
+      anchor-0_19_0
       spl-token-cli
 
       anchor-parse-idls

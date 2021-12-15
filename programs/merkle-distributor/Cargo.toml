@@ -28,4 +28,4 @@ anchor-spl = ">=0.17.0"
 spl-associated-token-account = { version = "1.0.3", features = [
     "no-entrypoint"
 ] }
-vipers = "1.2.1"
+vipers = "1.5.5"
