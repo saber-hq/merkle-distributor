@@ -29,6 +29,7 @@ export type CreateDistributorArgs = {
   maxNumNodes: u64;
   tokenMint: PublicKey;
   base?: Keypair;
+  authClaimantOwner: Boolean,
 };
 
 export type PendingDistributor = {

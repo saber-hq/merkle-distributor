@@ -69,6 +69,7 @@ export class MerkleDistributorWrapper {
         toBytes32Array(root),
         args.maxTotalClaim,
         args.maxNumNodes,
+        args.authClaimantOwner,
         {
           accounts: {
             base: baseKey.publicKey,

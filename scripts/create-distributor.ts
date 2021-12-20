@@ -58,8 +58,10 @@ const main = async () => {
   const sdk = MerkleDistributorSDK.load({ provider });
   invariant(process.env.MINT_KEYFILE, "mint keyfile not found");
   const mintKeypair = readKeyfile(process.env.MINT_KEYFILE);
+  const authClaimantOwner = process.env.AUTH_CLAIMANT_OWNER || true;
 
   const pendingDistributor = await sdk.createDistributor({
+    authClaimantOwner,
     root: merkleRoot,
     maxTotalClaim: new u64(tokenTotal),
     maxNumNodes: new u64(Object.keys(claims).length),

@@ -21,6 +21,7 @@ pub mod merkle_distributor {
         root: [u8; 32],
         max_total_claim: u64,
         max_num_nodes: u64,
+        auth_claimant_owner: bool,
     ) -> ProgramResult {
         let distributor = &mut ctx.accounts.distributor;
 
@@ -34,6 +35,7 @@ pub mod merkle_distributor {
         distributor.max_num_nodes = max_num_nodes;
         distributor.total_amount_claimed = 0;
         distributor.num_nodes_claimed = 0;
+        distributor.auth_claimant_owner = auth_claimant_owner;
 
         Ok(())
     }
@@ -49,19 +51,28 @@ pub mod merkle_distributor {
         let claim_status = &mut ctx.accounts.claim_status;
         assert_owner!(claim_status.to_account_info(), ID);
         require!(
-            // This check is redudant, we should not be able to initialize a claim status account at the same key.
+            // This check is redundant, we should not be able to initialize a claim status account at the same key.
             !claim_status.is_claimed && claim_status.claimed_at == 0,
             DropAlreadyClaimed
         );
 
-        let claimant_account = &ctx.accounts.claimant;
+        let maybe_claimant = &ctx.accounts.maybe_claimant;
         let distributor = &ctx.accounts.distributor;
-        require!(claimant_account.is_signer, Unauthorized);
+        assert_ata!(
+            ctx.accounts.from,
+            ctx.accounts.distributor,
+            distributor.mint
+        );
+
+        let claimant = ctx.accounts.to.owner;
+        if distributor.auth_claimant_owner {
+            require!(claimant == maybe_claimant.key(), OwnerMismatch);
+        }
 
         // Verify the merkle proof.
         let node = anchor_lang::solana_program::keccak::hashv(&[
             &index.to_le_bytes(),
-            &claimant_account.key().to_bytes(),
+            &claimant.to_bytes(),
             &amount.to_le_bytes(),
         ]);
         require!(
@@ -74,7 +85,7 @@ pub mod merkle_distributor {
         claim_status.is_claimed = true;
         let clock = Clock::get()?;
         claim_status.claimed_at = clock.unix_timestamp;
-        claim_status.claimant = claimant_account.key();
+        claim_status.claimant = claimant;
 
         let seeds = [
             b"MerkleDistributor".as_ref(),
@@ -82,15 +93,6 @@ pub mod merkle_distributor {
             &[ctx.accounts.distributor.bump],
         ];
 
-        assert_ata!(
-            ctx.accounts.from,
-            ctx.accounts.distributor,
-            distributor.mint
-        );
-        require!(
-            ctx.accounts.to.owner == claimant_account.key(),
-            OwnerMismatch
-        );
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -119,7 +121,8 @@ pub mod merkle_distributor {
 
         emit!(ClaimedEvent {
             index,
-            claimant: claimant_account.key(),
+            claimant,
+            claimed_by: maybe_claimant.key(),
             amount
         });
         Ok(())
@@ -185,7 +188,7 @@ pub struct Claim<'info> {
     pub to: Account<'info, TokenAccount>,
 
     /// Who is claiming the tokens.
-    pub claimant: Signer<'info>,
+    pub maybe_claimant: Signer<'info>,
 
     /// Payer of the claim.
     pub payer: Signer<'info>,
@@ -219,6 +222,8 @@ pub struct MerkleDistributor {
     pub total_amount_claimed: u64,
     /// Number of nodes that have been claimed.
     pub num_nodes_claimed: u64,
+    /// Indicates whether to check the owner of the `to` account is also the tx signer.
+    pub auth_claimant_owner: bool,
 }
 
 #[account]
@@ -241,6 +246,8 @@ pub struct ClaimedEvent {
     pub index: u64,
     /// User that claimed.
     pub claimant: Pubkey,
+    /// User that signed tx. Can be the same as claimant.
+    pub claimed_by: Pubkey,
     /// Amount of tokens to distribute.
     pub amount: u64,
 }
