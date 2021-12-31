@@ -6,16 +6,16 @@ import { keccak_256 } from "js-sha3";
 import { MerkleTree } from "./merkle-tree";
 
 export class BalanceTree {
-  private readonly tree: MerkleTree;
+  private readonly _tree: MerkleTree;
   constructor(balances: { account: PublicKey; amount: BN }[]) {
-    this.tree = new MerkleTree(
+    this._tree = new MerkleTree(
       balances.map(({ account, amount }, index) => {
         return BalanceTree.toNode(index, account, amount);
       })
     );
   }
 
-  public static verifyProof(
+  static verifyProof(
     index: number,
     account: PublicKey,
     amount: BN,
@@ -31,7 +31,7 @@ export class BalanceTree {
   }
 
   // keccak256(abi.encode(index, account, amount))
-  public static toNode(index: number, account: PublicKey, amount: BN): Buffer {
+  static toNode(index: number, account: PublicKey, amount: BN): Buffer {
     const buf = Buffer.concat([
       new u64(index).toArrayLike(Buffer, "le", 8),
       account.toBuffer(),
@@ -40,20 +40,20 @@ export class BalanceTree {
     return Buffer.from(keccak_256(buf), "hex");
   }
 
-  public getHexRoot(): string {
-    return this.tree.getHexRoot();
+  getHexRoot(): string {
+    return this._tree.getHexRoot();
   }
 
   // returns the hex bytes32 values of the proof
-  public getHexProof(index: number, account: PublicKey, amount: BN): string[] {
-    return this.tree.getHexProof(BalanceTree.toNode(index, account, amount));
+  getHexProof(index: number, account: PublicKey, amount: BN): string[] {
+    return this._tree.getHexProof(BalanceTree.toNode(index, account, amount));
   }
 
-  public getRoot(): Buffer {
-    return this.tree.getRoot();
+  getRoot(): Buffer {
+    return this._tree.getRoot();
   }
 
-  public getProof(index: number, account: PublicKey, amount: BN): Buffer[] {
-    return this.tree.getProof(BalanceTree.toNode(index, account, amount));
+  getProof(index: number, account: PublicKey, amount: BN): Buffer[] {
+    return this._tree.getProof(BalanceTree.toNode(index, account, amount));
   }
 }

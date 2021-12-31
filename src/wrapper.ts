@@ -21,13 +21,13 @@ import type {
 import { toBytes32Array } from "./utils";
 
 export class MerkleDistributorWrapper {
-  public readonly program: MerkleDistributorProgram;
-  public readonly key: PublicKey;
-  public readonly distributorATA: PublicKey;
-  public data: DistributorData;
+  readonly program: MerkleDistributorProgram;
+  readonly key: PublicKey;
+  readonly distributorATA: PublicKey;
+  data: DistributorData;
 
   constructor(
-    public readonly sdk: MerkleDistributorSDK,
+    readonly sdk: MerkleDistributorSDK,
     key: PublicKey,
     distributorATA: PublicKey,
     data: DistributorData
@@ -38,7 +38,7 @@ export class MerkleDistributorWrapper {
     this.data = data;
   }
 
-  public static async load(
+  static async load(
     sdk: MerkleDistributorSDK,
     key: PublicKey
   ): Promise<MerkleDistributorWrapper> {
@@ -51,7 +51,7 @@ export class MerkleDistributorWrapper {
     );
   }
 
-  public static async createDistributor(
+  static async createDistributor(
     args: CreateDistributorArgs
   ): Promise<PendingDistributor> {
     const { root, tokenMint } = args;
@@ -99,7 +99,7 @@ export class MerkleDistributorWrapper {
     };
   }
 
-  public async claimIX(
+  async claimIX(
     args: ClaimArgs,
     payer: PublicKey
   ): Promise<TransactionInstruction> {
@@ -126,7 +126,7 @@ export class MerkleDistributorWrapper {
     );
   }
 
-  public async claim(args: ClaimArgs): Promise<TransactionEnvelope> {
+  async claim(args: ClaimArgs): Promise<TransactionEnvelope> {
     const { provider } = this.sdk;
     const tx = new TransactionEnvelope(provider, [
       await this.claimIX(args, provider.wallet.publicKey),
@@ -142,12 +142,12 @@ export class MerkleDistributorWrapper {
     return tx;
   }
 
-  public async getClaimStatus(index: u64): Promise<ClaimStatus> {
+  async getClaimStatus(index: u64): Promise<ClaimStatus> {
     const [key] = await findClaimStatusKey(index, this.key);
     return this.program.account.claimStatus.fetch(key);
   }
 
-  public async reload(): Promise<void> {
+  async reload(): Promise<void> {
     this.data = await this.program.account.merkleDistributor.fetch(this.key);
   }
 }
