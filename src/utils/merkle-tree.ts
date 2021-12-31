@@ -1,19 +1,51 @@
 import { keccak_256 } from "js-sha3";
 import invariant from "tiny-invariant";
 
+function getPairElement(idx: number, layer: Buffer[]): Buffer | null {
+  const pairIdx = idx % 2 === 0 ? idx + 1 : idx - 1;
+
+  if (pairIdx < layer.length) {
+    const pairEl = layer[pairIdx];
+    invariant(pairEl, "pairEl");
+    return pairEl;
+  } else {
+    return null;
+  }
+}
+
+function bufDedup(elements: Buffer[]): Buffer[] {
+  return elements.filter((el, idx) => {
+    return idx === 0 || !elements[idx - 1]?.equals(el);
+  });
+}
+
+function bufArrToHexArr(arr: Buffer[]): string[] {
+  if (arr.some((el) => !Buffer.isBuffer(el))) {
+    throw new Error("Array is not an array of buffers");
+  }
+
+  return arr.map((el) => "0x" + el.toString("hex"));
+}
+
+function sortAndConcat(...args: Buffer[]): Buffer {
+  return Buffer.concat([...args].sort(Buffer.compare.bind(null)));
+}
+
 export class MerkleTree {
-  private readonly elements: Buffer[];
-  private readonly bufferElementPositionIndex: { [hexElement: string]: number };
-  private readonly layers: Buffer[][];
+  private readonly _elements: Buffer[];
+  private readonly _bufferElementPositionIndex: {
+    [hexElement: string]: number;
+  };
+  private readonly _layers: Buffer[][];
 
   constructor(elements: Buffer[]) {
-    this.elements = [...elements];
+    this._elements = [...elements];
     // Sort elements
-    this.elements.sort(Buffer.compare.bind(null));
+    this._elements.sort(Buffer.compare.bind(null));
     // Deduplicate elements
-    this.elements = MerkleTree.bufDedup(this.elements);
+    this._elements = bufDedup(this._elements);
 
-    this.bufferElementPositionIndex = this.elements.reduce<{
+    this._bufferElementPositionIndex = this._elements.reduce<{
       [hexElement: string]: number;
     }>((memo, el, index) => {
       memo[el.toString("hex")] = index;
@@ -21,7 +53,7 @@ export class MerkleTree {
     }, {});
 
     // Create layers
-    this.layers = this.getLayers(this.elements);
+    this._layers = this.getLayers(this._elements);
   }
 
   getLayers(elements: Buffer[]): Buffer[][] {
@@ -64,13 +96,11 @@ export class MerkleTree {
       return first;
     }
 
-    return Buffer.from(
-      keccak_256.digest(MerkleTree.sortAndConcat(first, second))
-    );
+    return Buffer.from(keccak_256.digest(sortAndConcat(first, second)));
   }
 
   getRoot(): Buffer {
-    const root = this.layers[this.layers.length - 1]?.[0];
+    const root = this._layers[this._layers.length - 1]?.[0];
     invariant(root, "root");
     return root;
   }
@@ -80,15 +110,15 @@ export class MerkleTree {
   }
 
   getProof(el: Buffer): Buffer[] {
-    const initialIdx = this.bufferElementPositionIndex[el.toString("hex")];
+    const initialIdx = this._bufferElementPositionIndex[el.toString("hex")];
 
     if (typeof initialIdx !== "number") {
       throw new Error("Element does not exist in Merkle tree");
     }
 
     let idx = initialIdx;
-    return this.layers.reduce((proof, layer) => {
-      const pairElement = MerkleTree.getPairElement(idx, layer);
+    return this._layers.reduce((proof, layer) => {
+      const pairElement = getPairElement(idx, layer);
 
       if (pairElement) {
         proof.push(pairElement);
@@ -103,36 +133,6 @@ export class MerkleTree {
   getHexProof(el: Buffer): string[] {
     const proof = this.getProof(el);
 
-    return MerkleTree.bufArrToHexArr(proof);
-  }
-
-  private static getPairElement(idx: number, layer: Buffer[]): Buffer | null {
-    const pairIdx = idx % 2 === 0 ? idx + 1 : idx - 1;
-
-    if (pairIdx < layer.length) {
-      const pairEl = layer[pairIdx];
-      invariant(pairEl, "pairEl");
-      return pairEl;
-    } else {
-      return null;
-    }
-  }
-
-  private static bufDedup(elements: Buffer[]): Buffer[] {
-    return elements.filter((el, idx) => {
-      return idx === 0 || !elements[idx - 1]?.equals(el);
-    });
-  }
-
-  private static bufArrToHexArr(arr: Buffer[]): string[] {
-    if (arr.some((el) => !Buffer.isBuffer(el))) {
-      throw new Error("Array is not an array of buffers");
-    }
-
-    return arr.map((el) => "0x" + el.toString("hex"));
-  }
-
-  private static sortAndConcat(...args: Buffer[]): Buffer {
-    return Buffer.concat([...args].sort(Buffer.compare.bind(null)));
+    return bufArrToHexArr(proof);
   }
 }

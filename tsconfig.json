@@ -1,18 +1,9 @@
 {
+  "extends": "@saberhq/tsconfig/tsconfig.lib.json",
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "strict": true,
-    "strictFunctionTypes": true,
-    "noImplicitOverride": true,
-    "esModuleInterop": true,
-    "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "lib": ["ES2019"]
+    "module": "CommonJS",
+    "types": ["mocha"],
+    "resolveJsonModule": true
   },
   "include": ["./src", "./tests", "scripts/"]
 }

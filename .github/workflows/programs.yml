@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SOLANA_VERSION: "1.7.11"
+  SOLANA_VERSION: "1.9.0"
   RUST_TOOLCHAIN: nightly-2021-09-24
 
 jobs:
@@ -57,23 +57,21 @@ jobs:
           echo "Generating keypair..."
           solana-keygen new -o "$HOME/.config/solana/id.json" --no-passphrase --silent
 
-      - name: Cache Node modules
+      - name: Yarn Cache
         uses: actions/cache@v2
-        id: cache-node-modules
         with:
-          path: |
-            ./.yarn
-            ./node_modules
-          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          path: ./.yarn
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
+
       - name: Setup Node
         uses: actions/setup-node@v2
-        with:
-          node-version: "16"
-          registry-url: "https://npm.pkg.github.com"
       - run: yarn install
+      - run: nix shell .#ci --command yarn idl:generate
+      - run: nix shell .#ci --command yarn typecheck
 
       - name: Build program
         run: nix shell .#ci --command anchor build
-      - run: nix shell .#ci --command yarn idl:generate
       - run: nix shell .#ci --command yarn build
       - run: nix shell .#ci --command yarn test

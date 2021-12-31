@@ -8,8 +8,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SOLANA_VERSION: "1.7.11"
-  RUST_TOOLCHAIN: nightly-2021-09-01
+  SOLANA_VERSION: "1.9.0"
+  RUST_TOOLCHAIN: nightly-2021-12-14
   NPM_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
 jobs:
@@ -33,17 +33,14 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v2
-        with:
-          always-auth: true
-          node-version: 14.x
-      - name: Cache Node modules
+      - name: Yarn Cache
         uses: actions/cache@v2
-        id: cache-node-modules
         with:
-          path: |
-            ./.yarn
-            ./node_modules
-          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          path: ./.yarn
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
+
       - name: Install Yarn dependencies
         run: yarn install
       - name: Parse IDLs
@@ -75,7 +72,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Build programs
-        run: nix shell .#ci --command anchor build -v
+        run: nix shell .#ci --command anchor build --verifiable --solana-version ${{ env.SOLANA_VERSION }}
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -109,7 +106,5 @@ jobs:
           profile: minimal
           toolchain: ${{ env.RUST_TOOLCHAIN }}
       - uses: Swatinem/rust-cache@v1
-      - name: Install cargo-workspaces
-        run: cargo install cargo-workspaces || true
       - name: Publish crates
-        run: cargo ws publish --from-git --yes --skip-published --token ${{ secrets.CARGO_PUBLISH_TOKEN }}
+        run: nix shell .#ci --command cargo ws publish --from-git --yes --skip-published --token ${{ secrets.CARGO_PUBLISH_TOKEN }}

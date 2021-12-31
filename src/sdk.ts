@@ -14,8 +14,8 @@ import { MerkleDistributorWrapper } from "./wrapper";
 
 export class MerkleDistributorSDK {
   constructor(
-    public readonly provider: Provider,
-    public readonly program: MerkleDistributorProgram
+    readonly provider: Provider,
+    readonly program: MerkleDistributorProgram
   ) {}
 
   withSigner(signer: Signer): MerkleDistributorSDK {
@@ -33,7 +33,7 @@ export class MerkleDistributorSDK {
    * Loads the SDK.
    * @returns {MerkleDistributorSDK}
    */
-  public static load({
+  static load({
     provider,
   }: {
     // Provider
@@ -58,9 +58,7 @@ export class MerkleDistributorSDK {
    * Load an existing merkle distributor.
    * @returns {MerkleDistributorWrapper}
    */
-  public async loadDistributor(
-    key: PublicKey
-  ): Promise<MerkleDistributorWrapper> {
+  async loadDistributor(key: PublicKey): Promise<MerkleDistributorWrapper> {
     return await MerkleDistributorWrapper.load(this, key);
   }
 
@@ -68,7 +66,7 @@ export class MerkleDistributorSDK {
    * Create a merkle distributor.
    * @returns {PendingDistributor}
    */
-  public async createDistributor(
+  async createDistributor(
     args: Omit<CreateDistributorArgs, "sdk">
   ): Promise<PendingDistributor> {
     return await MerkleDistributorWrapper.createDistributor({

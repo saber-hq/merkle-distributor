@@ -2,7 +2,7 @@
 name = "merkle-distributor"
 version = "0.2.3"
 description = "A Solana program for distributing tokens according to a Merkle root."
-edition = "2018"
+edition = "2021"
 homepage = "https://saber.so"
 repository = "https://github.com/saber-hq/merkle-distributor"
 authors = [
@@ -28,4 +28,4 @@ anchor-spl = ">=0.17.0"
 spl-associated-token-account = { version = "1.0.3", features = [
     "no-entrypoint"
 ] }
-vipers = "1.2.1"
+vipers = "1.5.5"
