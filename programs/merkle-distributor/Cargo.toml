@@ -11,11 +11,11 @@ authors = [
 ]
 license = "GPL-3.0"
 keywords = ["solana", "airdrop", "token", "saber"]
-readme = "../README.md"
 
 [lib]
 crate-type = ["cdylib", "lib"]
 name = "merkle_distributor"
+path = "src/lib.rs"
 
 [features]
 no-entrypoint = []

@@ -9,9 +9,7 @@
     <img src="https://raw.githubusercontent.com/saber-hq/merkle-distributor/master/images/merkle-distributor.png" />
 </p>
 
-<p align="center">
-A program for distributing tokens according to a <a href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle root</a>.
-</p>
+A program for distributing tokens efficiently via uploading a [Merkle root](https://en.wikipedia.org/wiki/Merkle_tree).
 
 This program is largely based off of [Uniswap's Merkle Distributor](https://github.com/Uniswap/merkle-distributor).
 
