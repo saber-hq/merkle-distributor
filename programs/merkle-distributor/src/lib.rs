@@ -221,6 +221,9 @@ pub struct MerkleDistributor {
     pub num_nodes_claimed: u64,
 }
 
+/// Holds whether or not a claimant has claimed tokens.
+///
+/// TODO: this is probably better stored as the node that was verified.
 #[account]
 #[derive(Default)]
 pub struct ClaimStatus {
@@ -245,6 +248,7 @@ pub struct ClaimedEvent {
     pub amount: u64,
 }
 
+/// Error codes.
 #[error]
 pub enum ErrorCode {
     #[msg("Invalid Merkle proof.")]
