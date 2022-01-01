@@ -717,7 +717,6 @@ version = "0.2.3"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "spl-associated-token-account",
  "vipers",
 ]
 
