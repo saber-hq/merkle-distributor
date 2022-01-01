@@ -6,7 +6,7 @@
 [![Contributors](https://img.shields.io/github/contributors/saber-hq/merkle-distributor)](https://github.com/saber-hq/merkle-distributor/graphs/contributors)
 
 <p align="center">
-    <img src="/images/merkle-distributor.png" />
+    <img src="https://raw.githubusercontent.com/saber-hq/merkle-distributor/master/images/merkle-distributor.png" />
 </p>
 
 <p align="center">
