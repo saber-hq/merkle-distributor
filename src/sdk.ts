@@ -1,6 +1,6 @@
-import { Program, Provider as AnchorProvider } from "@project-serum/anchor";
-import type { Provider } from "@saberhq/solana-contrib";
-import { SignerWallet, SolanaProvider } from "@saberhq/solana-contrib";
+import { newProgram } from "@saberhq/anchor-contrib";
+import type { AugmentedProvider, Provider } from "@saberhq/solana-contrib";
+import { SolanaAugmentedProvider } from "@saberhq/solana-contrib";
 import type { PublicKey, Signer } from "@solana/web3.js";
 
 import { PROGRAM_ID } from "./constants";
@@ -14,18 +14,13 @@ import { MerkleDistributorWrapper } from "./wrapper";
 
 export class MerkleDistributorSDK {
   constructor(
-    readonly provider: Provider,
+    readonly provider: AugmentedProvider,
     readonly program: MerkleDistributorProgram
   ) {}
 
   withSigner(signer: Signer): MerkleDistributorSDK {
     return MerkleDistributorSDK.load({
-      provider: new SolanaProvider(
-        this.provider.connection,
-        this.provider.broadcaster,
-        new SignerWallet(signer),
-        this.provider.opts
-      ),
+      provider: this.provider.withSigner(signer),
     });
   }
 
@@ -39,18 +34,14 @@ export class MerkleDistributorSDK {
     // Provider
     provider: Provider;
   }): MerkleDistributorSDK {
-    const anchorProvider = new AnchorProvider(
-      provider.connection,
-      provider.wallet,
-      provider.opts
-    );
+    const aug = new SolanaAugmentedProvider(provider);
     return new MerkleDistributorSDK(
-      provider,
-      new Program(
+      aug,
+      newProgram<MerkleDistributorProgram>(
         MerkleDistributorJSON,
         PROGRAM_ID,
-        anchorProvider
-      ) as unknown as MerkleDistributorProgram
+        aug
+      )
     );
   }
 
