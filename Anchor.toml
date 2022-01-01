@@ -6,7 +6,7 @@ url = "https://anchor.projectserum.com"
 
 [provider]
 cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+wallet = "./tests/test-key.json"
 
 [programs.mainnet]
 merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
