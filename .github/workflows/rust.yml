@@ -39,6 +39,8 @@ jobs:
         run: cargo fmt -- --check
       - name: Run clippy
         run: cargo clippy --all-targets -- --deny=warnings
+      - name: Check if publish works
+        run: cargo publish --no-verify --dry-run
 
   unit-tests:
     runs-on: ubuntu-latest
