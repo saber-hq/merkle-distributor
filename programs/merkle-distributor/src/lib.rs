@@ -163,6 +163,7 @@ pub struct NewDistributor<'info> {
     pub mint: Account<'info, Mint>,
 
     /// Payer to create the distributor.
+    #[account(mut)]
     pub payer: Signer<'info>,
 
     /// The [System] program.
@@ -202,6 +203,7 @@ pub struct Claim<'info> {
     pub claimant: Signer<'info>,
 
     /// Payer of the claim.
+    #[account(mut)]
     pub payer: Signer<'info>,
 
     /// The [System] program.
