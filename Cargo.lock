@@ -749,7 +749,7 @@ dependencies = [
 
 [[package]]
 name = "merkle-distributor"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
