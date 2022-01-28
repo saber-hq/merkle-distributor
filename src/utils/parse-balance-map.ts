@@ -1,4 +1,4 @@
-import { u64 } from "@solana/spl-token";
+import { u64 } from "@saberhq/token-utils";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import invariant from "tiny-invariant";

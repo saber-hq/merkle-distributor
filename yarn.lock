@@ -259,7 +259,6 @@ __metadata:
     "@saberhq/solana-contrib": ^1.12.36
     "@saberhq/token-utils": ^1.12.36
     "@saberhq/tsconfig": ^1.12.36
-    "@solana/spl-token": ^0.1.8
     "@solana/web3.js": ^1.32.0
     "@types/bn.js": ^5.1.0
     "@types/chai": ^4.3.0
@@ -282,9 +281,9 @@ __metadata:
     typescript: ^4.5.5
   peerDependencies:
     "@project-serum/anchor": ^0.19 || ^0.20
-    "@saberhq/anchor-contrib": ^1.10
-    "@saberhq/solana-contrib": ^1.10
-    "@saberhq/token-utils": ^1.10
+    "@saberhq/anchor-contrib": ^1.12
+    "@saberhq/solana-contrib": ^1.12
+    "@saberhq/token-utils": ^1.12
     "@solana/web3.js": ^1.29.2
     bn.js: ^5.2.0
     jsbi: "*"
