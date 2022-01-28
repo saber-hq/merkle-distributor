@@ -1,5 +1,6 @@
-import { Provider, setProvider } from "@project-serum/anchor";
+import { Provider as AnchorProvider, setProvider } from "@project-serum/anchor";
 import { expectTX } from "@saberhq/chai-solana";
+import type { Provider } from "@saberhq/solana-contrib";
 import { SolanaProvider, TransactionEnvelope } from "@saberhq/solana-contrib";
 import type { u64 } from "@saberhq/token-utils";
 import { createMint, SPLToken, TOKEN_PROGRAM_ID } from "@saberhq/token-utils";
@@ -12,14 +13,13 @@ import type { PendingDistributor } from "../src/types";
 export const DEFAULT_TOKEN_DECIMALS = 6;
 
 export const makeSDK = (): MerkleDistributorSDK => {
-  const anchorProvider = Provider.env();
+  const anchorProvider = AnchorProvider.env();
   // if the program isn't loaded, load the default
   // Configure the client to use the provider.
   setProvider(anchorProvider);
 
-  const provider = SolanaProvider.load({
+  const provider = SolanaProvider.init({
     connection: anchorProvider.connection,
-    sendConnection: anchorProvider.connection,
     wallet: anchorProvider.wallet,
     opts: anchorProvider.opts,
   });
@@ -28,7 +28,7 @@ export const makeSDK = (): MerkleDistributorSDK => {
 };
 
 export const createKeypairWithSOL = async (
-  provider: SolanaProvider
+  provider: Provider
 ): Promise<Keypair> => {
   const kp = Keypair.generate();
   await provider.connection.requestAirdrop(kp.publicKey, LAMPORTS_PER_SOL);
