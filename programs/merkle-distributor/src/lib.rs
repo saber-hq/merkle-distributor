@@ -16,7 +16,7 @@
 
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
-use vipers::{assert_ata, assert_owner, unwrap_int};
+use vipers::prelude::*;
 
 pub mod merkle_proof;
 
@@ -25,6 +25,9 @@ declare_id!("MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8");
 /// The [merkle_distributor] program.
 #[program]
 pub mod merkle_distributor {
+    #[allow(deprecated)]
+    use vipers::assert_ata;
+
     use super::*;
 
     /// Creates a new [MerkleDistributor].
@@ -53,6 +56,7 @@ pub mod merkle_distributor {
     }
 
     /// Claims tokens from the [MerkleDistributor].
+    #[allow(deprecated)]
     pub fn claim(
         ctx: Context<Claim>,
         _bump: u8,
@@ -61,9 +65,8 @@ pub mod merkle_distributor {
         proof: Vec<[u8; 32]>,
     ) -> ProgramResult {
         let claim_status = &mut ctx.accounts.claim_status;
-        assert_owner!(claim_status.to_account_info(), ID);
         require!(
-            // This check is redudant, we should not be able to initialize a claim status account at the same key.
+            // This check is redundant, we should not be able to initialize a claim status account at the same key.
             !claim_status.is_claimed && claim_status.claimed_at == 0,
             DropAlreadyClaimed
         );
