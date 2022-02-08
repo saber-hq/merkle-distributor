@@ -753,6 +753,7 @@ version = "0.2.6"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "program-bitmap",
  "vipers",
 ]
 
@@ -879,6 +880,13 @@ dependencies = [
  "syn",
  "version_check",
  "yansi",
+]
+
+[[package]]
+name = "program-bitmap"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
 ]
 
 [[package]]

@@ -3,9 +3,11 @@ import type { AugmentedProvider, Provider } from "@saberhq/solana-contrib";
 import { SolanaAugmentedProvider } from "@saberhq/solana-contrib";
 import type { PublicKey, Signer } from "@solana/web3.js";
 
-import { PROGRAM_ID } from "./constants";
+import { BITMAP_PROGRAM_ID, PROGRAM_ID } from "./constants";
 import { MerkleDistributorJSON } from "./idls/merkle_distributor";
+import { ProgramBitmapJSON } from "./idls/program_bitmap";
 import type {
+  BitmapProgram,
   CreateDistributorArgs,
   MerkleDistributorProgram,
   PendingDistributor,
@@ -15,7 +17,8 @@ import { MerkleDistributorWrapper } from "./wrapper";
 export class MerkleDistributorSDK {
   constructor(
     readonly provider: AugmentedProvider,
-    readonly program: MerkleDistributorProgram
+    readonly program: MerkleDistributorProgram,
+    readonly bitmapProgram: BitmapProgram
   ) {}
 
   withSigner(signer: Signer): MerkleDistributorSDK {
@@ -41,7 +44,8 @@ export class MerkleDistributorSDK {
         MerkleDistributorJSON,
         PROGRAM_ID,
         aug
-      )
+      ),
+      newProgram<BitmapProgram>(ProgramBitmapJSON, BITMAP_PROGRAM_ID, aug)
     );
   }
 

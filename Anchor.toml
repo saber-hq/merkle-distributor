@@ -19,6 +19,7 @@ merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
 
 [programs.localnet]
 merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
+program_bitmap = "BMP23Y1u4FdGSwknSH7PVswT9ru7f9YsyjqR18pHGmBJ"
 
 [scripts]
 test = "yarn mocha"

@@ -1,0 +1,21 @@
+[package]
+name = "program-bitmap"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "program_bitmap"
+
+doctest = false
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+production = []
+
+[dependencies]
+anchor-lang = "0.20.1"

@@ -1,5 +1,4 @@
 import { TransactionEnvelope } from "@saberhq/solana-contrib";
-import type { u64 } from "@saberhq/token-utils";
 import {
   getATAAddress,
   getOrCreateATA,
@@ -8,11 +7,10 @@ import {
 import type { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { Keypair, SystemProgram } from "@solana/web3.js";
 
-import { findClaimStatusKey, findDistributorKey } from "./pda";
+import { findDistributorKey } from "./pda";
 import type { MerkleDistributorSDK } from "./sdk";
 import type {
   ClaimArgs,
-  ClaimStatus,
   CreateDistributorArgs,
   DistributorData,
   MerkleDistributorProgram,
@@ -64,6 +62,12 @@ export class MerkleDistributorWrapper {
 
     const ixs: TransactionInstruction[] = [];
     ixs.push(
+      await sdk.bitmapProgram.account.ownedBitmap.createInstruction(
+        args.bitmap,
+        Math.ceil(args.maxNumNodes.toNumber() / 8) + 45
+      )
+    );
+    ixs.push(
       sdk.program.instruction.newDistributor(
         bump,
         toBytes32Array(root),
@@ -73,9 +77,11 @@ export class MerkleDistributorWrapper {
           accounts: {
             base: baseKey.publicKey,
             distributor,
+            bitmap: args.bitmap.publicKey,
             mint: tokenMint,
             payer: provider.wallet.publicKey,
             systemProgram: SystemProgram.programId,
+            bitmapProgram: sdk.bitmapProgram.programId,
           },
         }
       )
@@ -95,7 +101,7 @@ export class MerkleDistributorWrapper {
       bump,
       distributor,
       distributorATA: address,
-      tx: new TransactionEnvelope(provider, ixs, [baseKey]),
+      tx: new TransactionEnvelope(provider, ixs, [baseKey, args.bitmap]),
     };
   }
 
@@ -104,23 +110,21 @@ export class MerkleDistributorWrapper {
     payer: PublicKey
   ): Promise<TransactionInstruction> {
     const { amount, claimant, index, proof } = args;
-    const [claimStatus, bump] = await findClaimStatusKey(index, this.key);
-
     return this.program.instruction.claim(
-      bump,
       index,
       amount,
       proof.map((p) => toBytes32Array(p)),
       {
         accounts: {
           distributor: this.key,
-          claimStatus,
+          bitmap: this.data.bitmap,
           from: this.distributorATA,
           to: await getATAAddress({ mint: this.data.mint, owner: claimant }),
           claimant,
           payer,
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
+          bitmapProgram: this.sdk.bitmapProgram.programId,
         },
       }
     );
@@ -140,11 +144,6 @@ export class MerkleDistributorWrapper {
       tx.instructions.unshift(instruction);
     }
     return tx;
-  }
-
-  async getClaimStatus(index: u64): Promise<ClaimStatus> {
-    const [key] = await findClaimStatusKey(index, this.key);
-    return this.program.account.claimStatus.fetch(key);
   }
 
   async reload(): Promise<void> {

@@ -16,6 +16,7 @@
 
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
+use program_bitmap::{program::ProgramBitmap, OwnedBitmap};
 use vipers::prelude::*;
 
 pub mod merkle_proof;
@@ -25,9 +26,6 @@ declare_id!("MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8");
 /// The [merkle_distributor] program.
 #[program]
 pub mod merkle_distributor {
-    #[allow(deprecated)]
-    use vipers::assert_ata;
-
     use super::*;
 
     /// Creates a new [MerkleDistributor].
@@ -40,40 +38,53 @@ pub mod merkle_distributor {
         max_num_nodes: u64,
     ) -> ProgramResult {
         let distributor = &mut ctx.accounts.distributor;
+        let bitmap = &mut ctx.accounts.bitmap;
 
         distributor.base = ctx.accounts.base.key();
         distributor.bump = bump;
 
         distributor.root = root;
         distributor.mint = ctx.accounts.mint.key();
+        distributor.bitmap = bitmap.key();
 
         distributor.max_total_claim = max_total_claim;
         distributor.max_num_nodes = max_num_nodes;
         distributor.total_amount_claimed = 0;
         distributor.num_nodes_claimed = 0;
 
+        let seeds = [
+            b"MerkleDistributor".as_ref(),
+            &distributor.base.to_bytes(),
+            &[ctx.accounts.distributor.bump],
+        ];
+        let cpi_seeds = &[&seeds[..]];
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.bitmap_program.to_account_info(),
+            program_bitmap::cpi::accounts::Initialize {
+                ob: bitmap.to_account_info(),
+                owner: ctx.accounts.distributor.to_account_info(),
+            },
+            cpi_seeds,
+        );
+        program_bitmap::cpi::initialize(cpi_ctx, max_num_nodes + 8)?;
+        bitmap.reload()?;
+        require!(bitmap.capacity() >= max_num_nodes, ErrorCode::InvalidBitmap);
+
         Ok(())
     }
 
     /// Claims tokens from the [MerkleDistributor].
-    #[allow(deprecated)]
     pub fn claim(
         ctx: Context<Claim>,
-        _bump: u8,
         index: u64,
         amount: u64,
         proof: Vec<[u8; 32]>,
     ) -> ProgramResult {
-        let claim_status = &mut ctx.accounts.claim_status;
-        require!(
-            // This check is redundant, we should not be able to initialize a claim status account at the same key.
-            !claim_status.is_claimed && claim_status.claimed_at == 0,
-            DropAlreadyClaimed
-        );
-
         let claimant_account = &ctx.accounts.claimant;
         let distributor = &ctx.accounts.distributor;
         require!(claimant_account.is_signer, Unauthorized);
+
+        require!(!ctx.accounts.bitmap.is_set(index), DropAlreadyClaimed);
 
         // Verify the merkle proof.
         let node = anchor_lang::solana_program::keccak::hashv(&[
@@ -86,24 +97,23 @@ pub mod merkle_distributor {
             InvalidProof
         );
 
-        // Mark it claimed and send the tokens.
-        claim_status.amount = amount;
-        claim_status.is_claimed = true;
-        let clock = Clock::get()?;
-        claim_status.claimed_at = clock.unix_timestamp;
-        claim_status.claimant = claimant_account.key();
-
         let seeds = [
             b"MerkleDistributor".as_ref(),
             &distributor.base.to_bytes(),
             &[ctx.accounts.distributor.bump],
         ];
 
-        assert_ata!(
-            ctx.accounts.from,
-            ctx.accounts.distributor,
-            distributor.mint
+        let bitmap_seeds = &[&seeds[..]];
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.bitmap_program.to_account_info(),
+            program_bitmap::cpi::accounts::Admin {
+                ob: ctx.accounts.bitmap.to_account_info(),
+                owner: ctx.accounts.distributor.to_account_info(),
+            },
+            bitmap_seeds,
         );
+        program_bitmap::cpi::set(cpi_ctx, index)?;
+
         require!(
             ctx.accounts.to.owner == claimant_account.key(),
             OwnerMismatch
@@ -162,6 +172,8 @@ pub struct NewDistributor<'info> {
     )]
     pub distributor: Account<'info, MerkleDistributor>,
 
+    #[account(zero)]
+    pub bitmap: Account<'info, OwnedBitmap>,
     /// The mint to distribute.
     pub mint: Account<'info, Mint>,
 
@@ -171,31 +183,21 @@ pub struct NewDistributor<'info> {
 
     /// The [System] program.
     pub system_program: Program<'info, System>,
+    pub bitmap_program: Program<'info, ProgramBitmap>,
 }
 
 /// [merkle_distributor::claim] accounts.
 #[derive(Accounts)]
-#[instruction(_bump: u8, index: u64)]
 pub struct Claim<'info> {
     /// The [MerkleDistributor].
-    #[account(mut)]
+    #[account(mut, has_one = bitmap)]
     pub distributor: Account<'info, MerkleDistributor>,
 
-    /// Status of the claim.
-    #[account(
-        init,
-        seeds = [
-            b"ClaimStatus".as_ref(),
-            index.to_le_bytes().as_ref(),
-            distributor.key().to_bytes().as_ref()
-        ],
-        bump = _bump,
-        payer = payer
-    )]
-    pub claim_status: Account<'info, ClaimStatus>,
+    #[account(mut)]
+    pub bitmap: Account<'info, OwnedBitmap>,
 
     /// Distributor ATA containing the tokens to distribute.
-    #[account(mut)]
+    #[account(mut, associated_token::mint = distributor.mint, associated_token::authority = distributor)]
     pub from: Account<'info, TokenAccount>,
 
     /// Account to send the claimed tokens to.
@@ -214,6 +216,8 @@ pub struct Claim<'info> {
 
     /// SPL [Token] program.
     pub token_program: Program<'info, Token>,
+
+    pub bitmap_program: Program<'info, ProgramBitmap>,
 }
 
 /// State for the account which distributes tokens.
@@ -230,6 +234,7 @@ pub struct MerkleDistributor {
 
     /// [Mint] of the token to be distributed.
     pub mint: Pubkey,
+    pub bitmap: Pubkey,
     /// Maximum number of tokens that can ever be claimed from this [MerkleDistributor].
     pub max_total_claim: u64,
     /// Maximum number of nodes that can ever be claimed from this [MerkleDistributor].
@@ -238,22 +243,6 @@ pub struct MerkleDistributor {
     pub total_amount_claimed: u64,
     /// Number of nodes that have been claimed.
     pub num_nodes_claimed: u64,
-}
-
-/// Holds whether or not a claimant has claimed tokens.
-///
-/// TODO: this is probably better stored as the node that was verified.
-#[account]
-#[derive(Default)]
-pub struct ClaimStatus {
-    /// If true, the tokens have been claimed.
-    pub is_claimed: bool,
-    /// Authority that claimed the tokens.
-    pub claimant: Pubkey,
-    /// When the tokens were claimed.
-    pub claimed_at: i64,
-    /// Amount of tokens claimed.
-    pub amount: u64,
 }
 
 /// Emitted when tokens are claimed.
@@ -282,4 +271,6 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Token account owner did not match intended owner")]
     OwnerMismatch,
+    #[msg("Invalid bitmap")]
+    InvalidBitmap,
 }

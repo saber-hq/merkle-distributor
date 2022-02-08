@@ -52,11 +52,13 @@ export const createAndSeedDistributor = async (
     DEFAULT_TOKEN_DECIMALS
   );
 
+  const bitmap = Keypair.generate();
   const pendingDistributor = await sdk.createDistributor({
     root,
     maxTotalClaim,
     maxNumNodes,
     tokenMint: mint,
+    bitmap,
   });
   await expectTX(pendingDistributor.tx, "create merkle distributor").to.be
     .fulfilled;

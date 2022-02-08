@@ -1,11 +1,11 @@
 import { chaiSolana, expectTX } from "@saberhq/chai-solana";
 import { u64 } from "@saberhq/token-utils";
-import type { PublicKey, SendTransactionError } from "@solana/web3.js";
+import type { PublicKey } from "@solana/web3.js";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import chai, { expect } from "chai";
 import invariant from "tiny-invariant";
 
-import { findClaimStatusKey } from "../src/pda";
+import { MerkleDistributorErrors } from "../src";
 import { parseBalanceMap } from "../src/utils";
 import { createAndSeedDistributor, makeSDK } from "./testutils";
 
@@ -139,15 +139,12 @@ describe("parse BalanceMap", () => {
         });
         badTx.addSigners(claimantKP);
 
-        const [claimKey] = await findClaimStatusKey(index, distributorW.key);
-
         try {
           await badTx.confirm();
         } catch (e) {
-          const err = (e as { errors: Error[] })
-            .errors[0] as SendTransactionError;
-          expect(err.logs?.join(" ")).to.have.string(
-            `Allocate: account Address { address: ${claimKey.toString()}, base: None } already in use`
+          const err = (e as { errors: Error[] }).errors[0] as Error;
+          expect(err.message).to.include(
+            `0x${MerkleDistributorErrors.DropAlreadyClaimed.code.toString(16)}`
           );
         }
       })
