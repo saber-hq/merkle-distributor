@@ -22,9 +22,9 @@ pub mod merkle_proof;
 
 declare_id!("MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8");
 
-/// The [png_merkle_distributor] program.
+/// The [merkle_distributor] program.
 #[program]
-pub mod png_merkle_distributor {
+pub mod merkle_distributor {
     #[allow(deprecated)]
     use vipers::assert_ata;
 
@@ -168,7 +168,7 @@ pub mod png_merkle_distributor {
     }
 }
 
-/// Accounts for [png_merkle_distributor::new_distributor].
+/// Accounts for [merkle_distributor::new_distributor].
 #[derive(Accounts)]
 #[instruction(bump: u8)]
 pub struct NewDistributor<'info> {
@@ -200,7 +200,7 @@ pub struct NewDistributor<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Accounts for [png_merkle_distributor::update_distributor].
+/// Accounts for [merkle_distributor::update_distributor].
 #[derive(Accounts)]
 pub struct UpdateDistributor<'info> {
     /// Admin key of the distributor.
@@ -214,7 +214,7 @@ pub struct UpdateDistributor<'info> {
     pub payer: Signer<'info>,
 }
 
-/// [png_merkle_distributor::claim] accounts.
+/// [merkle_distributor::claim] accounts.
 #[derive(Accounts)]
 #[instruction(_bump: u8, index: u64)]
 pub struct Claim<'info> {

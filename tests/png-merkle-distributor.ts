@@ -7,7 +7,7 @@ import {Keypair, PublicKey, SystemProgram, Transaction,} from "@solana/web3.js";
 import {BalanceTree, toBytes32Array} from "../src/utils";
 import assert from "assert";
 
-const program: Program = workspace.PngMerkleDistributor;
+const program: Program = workspace.MerkleDistributor;
 const [provider, payer] = [program.provider, program.provider.wallet.publicKey];
 
 const MAX_NUM_NODES = new BN(3);
