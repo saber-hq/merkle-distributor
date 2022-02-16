@@ -1,7 +1,3 @@
-1.anchor build
-2.yarn idl:generate
-3.yarn run test
-
 # png-merkle-distributor
 A program that can repeatedly add airdrops based on [saber merkle-distributor](https://github.com/saber-hq/merkle-distributor).
 
@@ -13,3 +9,8 @@ We have developed a program that can update the root of the Merkle tree. The dev
 
 ## License
 The Png Merkle distributor program is distributed under the GPL v3.0 license.
+
+to run testcase  
+1.anchor build  
+2.yarn idl:generate  
+3.yarn run test  
