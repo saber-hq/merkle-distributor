@@ -1,5 +1,4 @@
 import { TransactionEnvelope } from "@saberhq/solana-contrib";
-import type { u64 } from "@saberhq/token-utils";
 import {
   getATAAddress,
   getOrCreateATA,
@@ -60,6 +59,7 @@ export class MerkleDistributorWrapper {
     const { provider } = sdk;
 
     const baseKey = args.base ?? Keypair.generate();
+    const adminAuth = args.adminAuth ?? Keypair.generate();
     const [distributor, bump] = await findDistributorKey(baseKey.publicKey);
 
     const ixs: TransactionInstruction[] = [];
@@ -72,6 +72,7 @@ export class MerkleDistributorWrapper {
         {
           accounts: {
             base: baseKey.publicKey,
+            adminAuth: adminAuth.publicKey,
             distributor,
             mint: tokenMint,
             payer: provider.wallet.publicKey,
@@ -95,7 +96,7 @@ export class MerkleDistributorWrapper {
       bump,
       distributor,
       distributorATA: address,
-      tx: new TransactionEnvelope(provider, ixs, [baseKey]),
+      tx: new TransactionEnvelope(provider, ixs, [baseKey, adminAuth]),
     };
   }
 
@@ -104,7 +105,7 @@ export class MerkleDistributorWrapper {
     payer: PublicKey
   ): Promise<TransactionInstruction> {
     const { amount, claimant, index, proof } = args;
-    const [claimStatus, bump] = await findClaimStatusKey(index, this.key);
+    const [claimStatus, bump] = await findClaimStatusKey(claimant, this.key);
 
     return this.program.instruction.claim(
       bump,
@@ -142,8 +143,8 @@ export class MerkleDistributorWrapper {
     return tx;
   }
 
-  async getClaimStatus(index: u64): Promise<ClaimStatus> {
-    const [key] = await findClaimStatusKey(index, this.key);
+  async getClaimStatus(claimant: PublicKey): Promise<ClaimStatus> {
+    const [key] = await findClaimStatusKey(claimant, this.key);
     return this.program.account.claimStatus.fetch(key);
   }
 

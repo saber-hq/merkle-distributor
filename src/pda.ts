@@ -1,5 +1,4 @@
 import { utils } from "@project-serum/anchor";
-import type { u64 } from "@saberhq/token-utils";
 import { PublicKey } from "@solana/web3.js";
 
 import { PROGRAM_ID } from "./constants";
@@ -14,14 +13,14 @@ export const findDistributorKey = async (
 };
 
 export const findClaimStatusKey = async (
-  index: u64,
+  claimant: PublicKey,
   distributor: PublicKey
 ): Promise<[PublicKey, number]> => {
   return await PublicKey.findProgramAddress(
     [
       utils.bytes.utf8.encode("ClaimStatus"),
-      index.toArrayLike(Buffer, "le", 8),
       distributor.toBytes(),
+      claimant.toBytes(),
     ],
     PROGRAM_ID
   );
