@@ -133,3 +133,7 @@ dist
 artifacts/
 src/idls/
 data/distributor-info.json
+.idea/inspectionProfiles/Project_Default.xml
+.idea/merkle-distributor.iml
+.idea/modules.xml
+.idea/workspace.xml
