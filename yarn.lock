@@ -146,6 +146,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@project-serum/anchor@npm:^0.11.1":
+  version: 0.11.1
+  resolution: "@project-serum/anchor@npm:0.11.1"
+  dependencies:
+    "@project-serum/borsh": ^0.2.2
+    "@solana/web3.js": ^1.17.0
+    base64-js: ^1.5.1
+    bn.js: ^5.1.2
+    bs58: ^4.0.1
+    buffer-layout: ^1.2.0
+    camelcase: ^5.3.1
+    crypto-hash: ^1.3.0
+    eventemitter3: ^4.0.7
+    find: ^0.3.0
+    js-sha256: ^0.9.0
+    pako: ^2.0.3
+    snake-case: ^3.0.4
+    toml: ^3.0.0
+  checksum: adbb8cfcb58566519253b55d6be88927a57f079f8abbe64c12b5fa16a24a76c512d4122c5561b5a2f89a9094e5d53beeafb9982f57611f86db47e4659a301fdc
+  languageName: node
+  linkType: hard
+
 "@project-serum/anchor@npm:^0.20.1":
   version: 0.20.1
   resolution: "@project-serum/anchor@npm:0.20.1"
@@ -168,6 +190,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@project-serum/associated-token@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@project-serum/associated-token@npm:0.1.1"
+  peerDependencies:
+    "@solana/web3.js": ^0.86.1
+  checksum: baa7f2b56413b28a80f0ba260a1512bda3b861c03f60f2b113a892f6ce93be24dc40c24affa7e1f944aca0e445cde2168d8d60a44a57bdca4b5e15a9b8b20a6c
+  languageName: node
+  linkType: hard
+
 "@project-serum/borsh@npm:^0.2.2":
   version: 0.2.2
   resolution: "@project-serum/borsh@npm:0.2.2"
@@ -177,6 +208,32 @@ __metadata:
   peerDependencies:
     "@solana/web3.js": ^1.2.0
   checksum: f6ffd5f21cad0cb8a84901dcf21342af73a4b48e2121ba9fd3e1f84b400e66eacb3a7e80ae350a0592f728dea99604c50084ab1455ddf4f3a9d28c8a38bbc188
+  languageName: node
+  linkType: hard
+
+"@project-serum/common@npm:^0.0.1-beta.3":
+  version: 0.0.1-beta.3
+  resolution: "@project-serum/common@npm:0.0.1-beta.3"
+  dependencies:
+    "@project-serum/serum": ^0.13.21
+    bn.js: ^5.1.2
+    superstruct: 0.8.3
+  peerDependencies:
+    "@solana/web3.js": ^0.87.1
+  checksum: dfb6b7eefa6682cfe7a992d54519c2f050617c5a068ab2a4aa80c1c6ff80404d43ceeb81af3ddc22d31a89d12bf6578dc62e44f17871116f34ce52d752527d4b
+  languageName: node
+  linkType: hard
+
+"@project-serum/serum@npm:^0.13.21, @project-serum/serum@npm:^0.13.60":
+  version: 0.13.61
+  resolution: "@project-serum/serum@npm:0.13.61"
+  dependencies:
+    "@project-serum/anchor": ^0.11.1
+    "@solana/spl-token": ^0.1.6
+    "@solana/web3.js": ^1.21.0
+    bn.js: ^5.1.2
+    buffer-layout: ^1.2.0
+  checksum: 33760acf76c188b782ff31b3e26c82304d492f179415306bb8dd6e9597ca16fd5bf95f89923ca2c212361f8535dba8d04097d4185654305c620aa5d7cd792b43
   languageName: node
   linkType: hard
 
@@ -252,6 +309,9 @@ __metadata:
   resolution: "@saberhq/merkle-distributor@workspace:."
   dependencies:
     "@project-serum/anchor": ^0.20.1
+    "@project-serum/associated-token": ^0.1.1
+    "@project-serum/common": ^0.0.1-beta.3
+    "@project-serum/serum": ^0.13.60
     "@rushstack/eslint-patch": ^1.1.0
     "@saberhq/anchor-contrib": ^1.12.36
     "@saberhq/chai-solana": ^1.12.36
@@ -259,12 +319,15 @@ __metadata:
     "@saberhq/solana-contrib": ^1.12.36
     "@saberhq/token-utils": ^1.12.36
     "@saberhq/tsconfig": ^1.12.36
+    "@solana/spl-token": ^0.1.8
     "@solana/web3.js": ^1.32.0
     "@types/bn.js": ^5.1.0
     "@types/chai": ^4.3.0
     "@types/mocha": ^9.1.0
     "@types/node": ^17.0.13
     bn.js: ^5.2.0
+    bs58: ^4.0.1
+    buffer-layout: ^1.2.2
     chai: ^4.3.6
     eslint: ^8.7.0
     eslint-import-resolver-node: ^0.3.6
@@ -350,7 +413,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solana/spl-token@npm:^0.1.8":
+"@solana/spl-token@npm:^0.1.6, @solana/spl-token@npm:^0.1.8":
   version: 0.1.8
   resolution: "@solana/spl-token@npm:0.1.8"
   dependencies:
@@ -2851,6 +2914,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"kind-of@npm:^6.0.2":
+  version: 6.0.3
+  resolution: "kind-of@npm:6.0.3"
+  checksum: 3ab01e7b1d440b22fe4c31f23d8d38b4d9b91d9f291df683476576493d5dfd2e03848a8b05813dd0c3f0e835bc63f433007ddeceb71f05cb25c45ae1b19c6d3b
+  languageName: node
+  linkType: hard
+
 "levn@npm:^0.4.1":
   version: 0.4.1
   resolution: "levn@npm:0.4.1"
@@ -4114,6 +4184,16 @@ resolve@^1.20.0:
   languageName: node
   linkType: hard
 
+"superstruct@npm:0.8.3":
+  version: 0.8.3
+  resolution: "superstruct@npm:0.8.3"
+  dependencies:
+    kind-of: ^6.0.2
+    tiny-invariant: ^1.0.6
+  checksum: 03699d3d860aa2b506a247c31d623ee8b4d5403fff097a49b1a166821b1cdef4da6fda65b501c4cc6d7cbcc9e6d47bd3490b0c336a0b1f93e812aa97ce83d2bb
+  languageName: node
+  linkType: hard
+
 "superstruct@npm:^0.14.2":
   version: 0.14.2
   resolution: "superstruct@npm:0.14.2"
@@ -4181,7 +4261,7 @@ resolve@^1.20.0:
   languageName: node
   linkType: hard
 
-"tiny-invariant@npm:^1.2.0":
+"tiny-invariant@npm:^1.0.6, tiny-invariant@npm:^1.2.0":
   version: 1.2.0
   resolution: "tiny-invariant@npm:1.2.0"
   checksum: e09a718a7c4a499ba592cdac61f015d87427a0867ca07f50c11fd9b623f90cdba18937b515d4a5e4f43dac92370498d7bdaee0d0e7a377a61095e02c4a92eade

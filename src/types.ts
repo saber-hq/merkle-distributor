@@ -28,6 +28,7 @@ export type CreateDistributorArgs = {
   maxTotalClaim: u64;
   maxNumNodes: u64;
   tokenMint: PublicKey;
+  adminAuth?: Keypair;
   base?: Keypair;
 };
 

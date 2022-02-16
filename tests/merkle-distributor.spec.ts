@@ -5,12 +5,10 @@ import {
   u64,
   ZERO,
 } from "@saberhq/token-utils";
-import type { SendTransactionError } from "@solana/web3.js";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import chai, { expect } from "chai";
 
 import { MerkleDistributorErrors } from "../src/idls/merkle_distributor";
-import { findClaimStatusKey } from "../src/pda";
 import { BalanceTree } from "../src/utils";
 import {
   createAndSeedDistributor,
@@ -142,10 +140,9 @@ describe("merkle-distributor", () => {
             amount.toString()
           );
 
-          const claimStatus = await distributorW.getClaimStatus(new u64(index));
-          expect(claimStatus.isClaimed).to.be.true;
+          const claimStatus = await distributorW.getClaimStatus(kp.publicKey);
           expect(claimStatus.claimant).to.eqAddress(kp.publicKey);
-          expect(claimStatus.amount.toString()).to.equal(amount.toString());
+          expect(claimStatus.claimedAmount.toString()).to.equal(amount.toString());
         })
       );
 
@@ -166,50 +163,6 @@ describe("merkle-distributor", () => {
       expect(data.totalAmountClaimed.toString()).to.equal(
         expectedTotalClaimed.toString()
       );
-    });
-
-    it("cannot allow two claims", async () => {
-      const userKP = await createKeypairWithSOL(provider);
-
-      const claimAmount = new u64(1_000_000);
-      const tree = new BalanceTree([
-        { account: userKP.publicKey, amount: claimAmount },
-      ]);
-      const { distributor } = await createAndSeedDistributor(
-        sdk,
-        MAX_TOTAL_CLAIM,
-        MAX_NUM_NODES,
-        tree.getRoot()
-      );
-      const distributorW = await sdk.loadDistributor(distributor);
-
-      const claim1 = await distributorW.claim({
-        index: new u64(0),
-        amount: claimAmount,
-        proof: tree.getProof(0, userKP.publicKey, claimAmount),
-        claimant: userKP.publicKey,
-      });
-      claim1.addSigners(userKP);
-      await expectTX(claim1, "claim tokens").to.be.fulfilled;
-
-      const claim2 = await distributorW.claim({
-        index: new u64(0),
-        amount: claimAmount,
-        proof: tree.getProof(0, userKP.publicKey, claimAmount),
-        claimant: userKP.publicKey,
-      });
-      claim2.addSigners(userKP);
-
-      const [claimKey] = await findClaimStatusKey(new u64(0), distributorW.key);
-      try {
-        await claim2.confirm();
-      } catch (e) {
-        const err = (e as { errors: Error[] })
-          .errors[0] as SendTransactionError;
-        expect(err.logs?.join(" ")).to.have.string(
-          `Allocate: account Address { address: ${claimKey.toString()}, base: None } already in use`
-        );
-      }
     });
 
     it("cannot claim more than proof", async () => {

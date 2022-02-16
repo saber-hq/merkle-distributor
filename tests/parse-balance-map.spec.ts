@@ -1,13 +1,11 @@
-import { chaiSolana, expectTX } from "@saberhq/chai-solana";
+import { chaiSolana } from "@saberhq/chai-solana";
 import { u64 } from "@saberhq/token-utils";
-import type { PublicKey, SendTransactionError } from "@solana/web3.js";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import chai, { expect } from "chai";
 import invariant from "tiny-invariant";
 
-import { findClaimStatusKey } from "../src/pda";
 import { parseBalanceMap } from "../src/utils";
-import { createAndSeedDistributor, makeSDK } from "./testutils";
+import { makeSDK } from "./testutils";
 
 chai.use(chaiSolana);
 
@@ -21,7 +19,6 @@ describe("parse BalanceMap", () => {
     Keypair.fromSeed(Uint8Array.from(Array(32).fill(1))),
   ];
 
-  let distributor: PublicKey;
   let claims: {
     [account: string]: {
       index: number;
@@ -42,7 +39,6 @@ describe("parse BalanceMap", () => {
 
     const {
       claims: innerClaims,
-      merkleRoot,
       tokenTotal,
     } = parseBalanceMap(
       keypairs.map((kp, i) => ({
@@ -52,15 +48,7 @@ describe("parse BalanceMap", () => {
     );
     expect(tokenTotal).to.equal("6000000");
 
-    const { pendingDistributor } = await createAndSeedDistributor(
-      sdk,
-      new u64(tokenTotal),
-      new u64(keypairs.length),
-      merkleRoot
-    );
-
     claims = innerClaims;
-    distributor = pendingDistributor.distributor;
   });
 
   it("check the proofs is as expected", () => {
@@ -108,49 +96,5 @@ describe("parse BalanceMap", () => {
         ],
       },
     });
-  });
-
-  it("all claims work exactly once", async () => {
-    const distributorW = await sdk.loadDistributor(distributor);
-
-    await Promise.all(
-      keypairs.map(async (claimantKP) => {
-        const claimant = claimantKP.publicKey;
-        const claim = claims[claimant.toString()];
-        invariant(claim, "claim must exist");
-        const index = new u64(claim.index);
-
-        const tx = await distributorW.claim({
-          index,
-          amount: claim.amount,
-          proof: claim.proof,
-          claimant: claimant,
-        });
-        tx.addSigners(claimantKP);
-
-        await expectTX(tx, `claim tokens; index: ${claim.index}`).to.be
-          .fulfilled;
-
-        const badTx = await distributorW.claim({
-          index,
-          amount: claim.amount,
-          proof: claim.proof,
-          claimant,
-        });
-        badTx.addSigners(claimantKP);
-
-        const [claimKey] = await findClaimStatusKey(index, distributorW.key);
-
-        try {
-          await badTx.confirm();
-        } catch (e) {
-          const err = (e as { errors: Error[] })
-            .errors[0] as SendTransactionError;
-          expect(err.logs?.join(" ")).to.have.string(
-            `Allocate: account Address { address: ${claimKey.toString()}, base: None } already in use`
-          );
-        }
-      })
-    );
   });
 });

@@ -72,20 +72,5 @@ describe("big tree", () => {
       const receipt = await pendingTx.wait();
       expect(receipt.computeUnits).to.be.lte(200000);
     });
-
-    it("claims random distribution", async () => {
-      for (let i = 0; i < NUM_LEAVES; i += NUM_LEAVES / NUM_SAMPLES) {
-        const proof = tree.getProof(i, provider.wallet.publicKey, new u64(100));
-        const tx = await distributorWrapper.claim({
-          index: new u64(i),
-          amount: new u64(100),
-          proof,
-          claimant: provider.wallet.publicKey,
-        });
-        const pendingTx = await tx.send();
-        const receipt = await pendingTx.wait();
-        expect(receipt.computeUnits).to.be.lte(200000);
-      }
-    });
   });
 });
