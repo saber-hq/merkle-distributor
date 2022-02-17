@@ -108,6 +108,7 @@ export class MerkleDistributorWrapper {
     const [claimStatus, bump] = await findClaimStatusKey(claimant, this.key);
 
     return this.program.instruction.claim(
+      args.rootVersion,
       bump,
       index,
       amount,

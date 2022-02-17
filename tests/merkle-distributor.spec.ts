@@ -68,6 +68,7 @@ describe("merkle-distributor", () => {
 
       const claimantKP = Keypair.generate();
       const tx = await distributorW.claim({
+        rootVersion: distributorW.data.rootVersion,
         index: new u64(0),
         amount: new u64(10_000_000),
         proof: [],
@@ -121,6 +122,7 @@ describe("merkle-distributor", () => {
           const proof = tree.getProof(index, kp.publicKey, amount);
 
           const tx = await distributorW.claim({
+            rootVersion: distributorW.data.rootVersion,
             index: new u64(index),
             amount,
             proof,
@@ -181,6 +183,7 @@ describe("merkle-distributor", () => {
       const distributorW = await sdk.loadDistributor(distributor);
 
       const tx = await distributorW.claim({
+        rootVersion: distributorW.data.rootVersion,
         index: new u64(0),
         amount: new u64(2_000_000),
         proof: tree.getProof(0, userKP.publicKey, claimAmount),
@@ -215,6 +218,7 @@ describe("merkle-distributor", () => {
       const distributorW = await sdk.loadDistributor(distributor);
 
       const tx = await distributorW.claim({
+        rootVersion: distributorW.data.rootVersion,
         index: new u64(0),
         amount: new u64(2_000_000),
         proof: tree.getProof(0, claimant, claimAmount),
