@@ -20,7 +20,7 @@ use vipers::prelude::*;
 
 pub mod merkle_proof;
 
-declare_id!("MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8");
+declare_id!("PMRKTWvK9f1cPkQuXvvyDPmyCSoq8FdedCimXrXJp8M");
 
 /// The [merkle_distributor] program.
 #[program]
@@ -79,8 +79,8 @@ pub mod merkle_distributor {
     #[allow(deprecated)]
     pub fn claim(
         ctx: Context<Claim>,
-        root_version: u64,
         _bump: u8,
+        root_version: u64,
         index: u64,
         amount: u64,
         proof: Vec<[u8; 32]>,
@@ -220,7 +220,7 @@ pub struct UpdateDistributor<'info> {
 
 /// [merkle_distributor::claim] accounts.
 #[derive(Accounts)]
-#[instruction(_bump: u8, index: u64)]
+#[instruction(_bump: u8)]
 pub struct Claim<'info> {
     /// The [MerkleDistributor].
     #[account(mut)]
