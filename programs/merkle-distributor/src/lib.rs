@@ -20,7 +20,7 @@ use vipers::prelude::*;
 
 pub mod merkle_proof;
 
-declare_id!("MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8");
+declare_id!("PMRKTWvK9f1cPkQuXvvyDPmyCSoq8FdedCimXrXJp8M");
 
 /// The [merkle_distributor] program.
 #[program]
@@ -53,6 +53,7 @@ pub mod merkle_distributor {
         distributor.max_num_nodes = max_num_nodes;
         distributor.total_amount_claimed = 0;
         distributor.num_nodes_claimed = 0;
+        distributor.root_version = 0;
 
         Ok(())
     }
@@ -69,6 +70,7 @@ pub mod merkle_distributor {
         distributor.max_total_claim = max_total_claim;
         distributor.max_num_nodes = max_num_nodes;
         distributor.num_nodes_claimed = 0;
+        distributor.root_version += 1;
 
         Ok(())
     }
@@ -78,19 +80,21 @@ pub mod merkle_distributor {
     pub fn claim(
         ctx: Context<Claim>,
         _bump: u8,
+        root_version: u64,
         index: u64,
         amount: u64,
         proof: Vec<[u8; 32]>,
     ) -> ProgramResult {
         let claim_status = &mut ctx.accounts.claim_status;
-        require!(
-            claim_status.claimed_amount < amount,
-            NoClaimableAmount
-        );
+        require!(claim_status.claimed_amount < amount, NoClaimableAmount);
 
         let claimant_account = &ctx.accounts.claimant;
         let distributor = &ctx.accounts.distributor;
         require!(claimant_account.is_signer, Unauthorized);
+        require!(
+            root_version == distributor.root_version,
+            RootVersionMismatch
+        );
 
         // Verify the merkle proof.
         let node = anchor_lang::solana_program::keccak::hashv(&[
@@ -135,7 +139,7 @@ pub mod merkle_distributor {
                     authority: ctx.accounts.distributor.to_account_info(),
                 },
             )
-                .with_signer(&[&seeds[..]]),
+            .with_signer(&[&seeds[..]]),
             claim_amount,
         )?;
 
@@ -216,7 +220,7 @@ pub struct UpdateDistributor<'info> {
 
 /// [merkle_distributor::claim] accounts.
 #[derive(Accounts)]
-#[instruction(_bump: u8, index: u64)]
+#[instruction(_bump: u8)]
 pub struct Claim<'info> {
     /// The [MerkleDistributor].
     #[account(mut)]
@@ -283,6 +287,7 @@ pub struct MerkleDistributor {
 
     /// The 256-bit merkle root.
     pub root: [u8; 32],
+    pub root_version: u64,
 
     /// [Mint] of the token to be distributed.
     pub mint: Pubkey,
@@ -340,4 +345,6 @@ pub enum ErrorCode {
     DistributorAdminMismatch,
     #[msg("no claimable amount")]
     NoClaimableAmount,
+    #[msg("Root version mismatch")]
+    RootVersionMismatch,
 }

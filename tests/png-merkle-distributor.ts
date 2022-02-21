@@ -137,7 +137,9 @@ describe("png-merkle-distributor", () => {
                     )
                 )
                 const kpHolder = await getAssociatedTokenAddress(kp.publicKey, airDropMint)
+                const state = await program.account.merkleDistributor.fetch(distributor);
                 await program.rpc.claim(
+                    state.rootVersion,
                     new BN(claimNonce),
                     new BN(index),
                     amount,
@@ -228,7 +230,9 @@ describe("png-merkle-distributor", () => {
                     provider,
                     kpHolder,
                 );
+                const state = await program.account.merkleDistributor.fetch(distributor);
                 await program.rpc.claim(
+                    state.rootVersion,
                     new BN(claimNonce),
                     new BN(index),
                     amount,

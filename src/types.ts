@@ -41,6 +41,7 @@ export type PendingDistributor = {
 };
 
 export type ClaimArgs = {
+  rootVersion: u64;
   index: u64;
   amount: u64;
   proof: Buffer[];

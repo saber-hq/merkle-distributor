@@ -59,6 +59,7 @@ describe("big tree", () => {
       const index = new u64(90000);
       const claimant = provider.wallet.publicKey;
       const tx = await distributorWrapper.claim({
+        rootVersion: distributorWrapper.data.rootVersion,
         index,
         amount,
         proof: tree.getProof(
