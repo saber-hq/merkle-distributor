@@ -25,24 +25,21 @@ declare_id!("MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8");
 /// The [merkle_distributor] program.
 #[program]
 pub mod merkle_distributor {
-    #[allow(deprecated)]
-    use vipers::assert_ata;
-
     use super::*;
 
     /// Creates a new [MerkleDistributor].
     /// After creating this [MerkleDistributor], the account should be seeded with tokens via its ATA.
     pub fn new_distributor(
         ctx: Context<NewDistributor>,
-        bump: u8,
+        _bump: u8,
         root: [u8; 32],
         max_total_claim: u64,
         max_num_nodes: u64,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let distributor = &mut ctx.accounts.distributor;
 
         distributor.base = ctx.accounts.base.key();
-        distributor.bump = bump;
+        distributor.bump = unwrap_bump!(ctx, "distributor");
 
         distributor.root = root;
         distributor.mint = ctx.accounts.mint.key();
@@ -56,16 +53,15 @@ pub mod merkle_distributor {
     }
 
     /// Claims tokens from the [MerkleDistributor].
-    #[allow(deprecated)]
     pub fn claim(
         ctx: Context<Claim>,
         _bump: u8,
         index: u64,
         amount: u64,
         proof: Vec<[u8; 32]>,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let claim_status = &mut ctx.accounts.claim_status;
-        require!(
+        invariant!(
             // This check is redundant, we should not be able to initialize a claim status account at the same key.
             !claim_status.is_claimed && claim_status.claimed_at == 0,
             DropAlreadyClaimed
@@ -73,7 +69,7 @@ pub mod merkle_distributor {
 
         let claimant_account = &ctx.accounts.claimant;
         let distributor = &ctx.accounts.distributor;
-        require!(claimant_account.is_signer, Unauthorized);
+        invariant!(claimant_account.is_signer, Unauthorized);
 
         // Verify the merkle proof.
         let node = anchor_lang::solana_program::keccak::hashv(&[
@@ -81,7 +77,7 @@ pub mod merkle_distributor {
             &claimant_account.key().to_bytes(),
             &amount.to_le_bytes(),
         ]);
-        require!(
+        invariant!(
             merkle_proof::verify(proof, distributor.root, node.0),
             InvalidProof
         );
@@ -99,12 +95,15 @@ pub mod merkle_distributor {
             &[ctx.accounts.distributor.bump],
         ];
 
-        assert_ata!(
-            ctx.accounts.from,
-            ctx.accounts.distributor,
-            distributor.mint
-        );
-        require!(
+        #[allow(deprecated)]
+        {
+            vipers::assert_ata!(
+                ctx.accounts.from,
+                ctx.accounts.distributor,
+                distributor.mint
+            );
+        }
+        invariant!(
             ctx.accounts.to.owner == claimant_account.key(),
             OwnerMismatch
         );
@@ -124,12 +123,12 @@ pub mod merkle_distributor {
         let distributor = &mut ctx.accounts.distributor;
         distributor.total_amount_claimed =
             unwrap_int!(distributor.total_amount_claimed.checked_add(amount));
-        require!(
+        invariant!(
             distributor.total_amount_claimed <= distributor.max_total_claim,
             ExceededMaxClaim
         );
         distributor.num_nodes_claimed = unwrap_int!(distributor.num_nodes_claimed.checked_add(1));
-        require!(
+        invariant!(
             distributor.num_nodes_claimed <= distributor.max_num_nodes,
             ExceededMaxNumNodes
         );
@@ -145,7 +144,6 @@ pub mod merkle_distributor {
 
 /// Accounts for [merkle_distributor::new_distributor].
 #[derive(Accounts)]
-#[instruction(bump: u8)]
 pub struct NewDistributor<'info> {
     /// Base key of the distributor.
     pub base: Signer<'info>,
@@ -157,7 +155,7 @@ pub struct NewDistributor<'info> {
             b"MerkleDistributor".as_ref(),
             base.key().to_bytes().as_ref()
         ],
-        bump = bump,
+        bump,
         payer = payer
     )]
     pub distributor: Account<'info, MerkleDistributor>,
@@ -189,7 +187,7 @@ pub struct Claim<'info> {
             index.to_le_bytes().as_ref(),
             distributor.key().to_bytes().as_ref()
         ],
-        bump = _bump,
+        bump,
         payer = payer
     )]
     pub claim_status: Account<'info, ClaimStatus>,
@@ -268,7 +266,7 @@ pub struct ClaimedEvent {
 }
 
 /// Error codes.
-#[error]
+#[error_code]
 pub enum ErrorCode {
     #[msg("Invalid Merkle proof.")]
     InvalidProof,
