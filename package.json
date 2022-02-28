@@ -1,6 +1,6 @@
 {
   "name": "@saberhq/merkle-distributor",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "TypeScript SDK for a Solana program for distributing tokens according to a Merkle root.",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
