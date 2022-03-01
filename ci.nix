@@ -9,7 +9,7 @@ in pkgs.buildEnv {
       anchor-0_22_0
       cargo-workspaces
       anchor-parse-idls
-      solana-basic
+      solana-full
 
       # sdk
       nodejs
