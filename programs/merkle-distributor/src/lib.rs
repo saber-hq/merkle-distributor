@@ -27,7 +27,6 @@ declare_id!("PMRKTWvK9f1cPkQuXvvyDPmyCSoq8FdedCimXrXJp8M");
 pub mod merkle_distributor {
     #[allow(deprecated)]
     use vipers::assert_ata;
-    use crate::ErrorCode::UpdateRootNoChange;
 
     use super::*;
 
@@ -340,8 +339,6 @@ pub enum ErrorCode {
     DistributorAdminMismatch,
     #[msg("no claimable amount")]
     NoClaimableAmount,
-    #[msg("Root version mismatch")]
-    RootVersionMismatch,
     #[msg("update root no change")]
     UpdateRootNoChange
 }
