@@ -27,6 +27,7 @@ declare_id!("PMRKTWvK9f1cPkQuXvvyDPmyCSoq8FdedCimXrXJp8M");
 pub mod merkle_distributor {
     #[allow(deprecated)]
     use vipers::assert_ata;
+    use crate::ErrorCode::UpdateRootNoChange;
 
     use super::*;
 
@@ -65,6 +66,7 @@ pub mod merkle_distributor {
         max_num_nodes: u64,
     ) -> ProgramResult {
         let distributor = &mut ctx.accounts.distributor;
+        require!(distributor.root != root, UpdateRootNoChange);
 
         distributor.root = root;
         distributor.max_total_claim = max_total_claim;
@@ -347,4 +349,6 @@ pub enum ErrorCode {
     NoClaimableAmount,
     #[msg("Root version mismatch")]
     RootVersionMismatch,
+    #[msg("update root no change")]
+    UpdateRootNoChange
 }
