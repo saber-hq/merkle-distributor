@@ -7,7 +7,7 @@ homepage = "https://saber.so"
 repository = "https://github.com/saber-hq/merkle-distributor"
 authors = [
     "Michael Huang <michaelhly@gmail.com>",
-    "Ian Macalinao <ian@ship.capital>"
+    "Ian Macalinao <ian@ship.capital>",
 ]
 license = "GPL-3.0"
 keywords = ["solana", "airdrop", "token", "saber"]
@@ -21,6 +21,7 @@ path = "src/lib.rs"
 no-entrypoint = []
 no-idl = []
 cpi = ["no-entrypoint"]
+production = []
 default = []
 
 [dependencies]

@@ -54,7 +54,6 @@ pub mod merkle_distributor {
         distributor.max_num_nodes = max_num_nodes;
         distributor.total_amount_claimed = 0;
         distributor.num_nodes_claimed = 0;
-        distributor.root_version = 0;
 
         Ok(())
     }
@@ -72,7 +71,6 @@ pub mod merkle_distributor {
         distributor.max_total_claim = max_total_claim;
         distributor.max_num_nodes = max_num_nodes;
         distributor.num_nodes_claimed = 0;
-        distributor.root_version += 1;
 
         Ok(())
     }
@@ -82,7 +80,6 @@ pub mod merkle_distributor {
     pub fn claim(
         ctx: Context<Claim>,
         _bump: u8,
-        root_version: u64,
         index: u64,
         amount: u64,
         proof: Vec<[u8; 32]>,
@@ -92,11 +89,13 @@ pub mod merkle_distributor {
 
         let claimant_account = &ctx.accounts.claimant;
         let distributor = &ctx.accounts.distributor;
-        require!(claimant_account.is_signer, Unauthorized);
-        require!(
-            root_version == distributor.root_version,
-            RootVersionMismatch
-        );
+
+        // Check whether payer is the admin or the claimant
+        if (ctx.accounts.payer.key() != claimant_account.key())
+            && (ctx.accounts.payer.key() != distributor.admin_auth)
+        {
+            return Err(ErrorCode::Unauthorized)?;
+        }
 
         // Verify the merkle proof.
         let node = anchor_lang::solana_program::keccak::hashv(&[
@@ -147,7 +146,7 @@ pub mod merkle_distributor {
 
         let distributor = &mut ctx.accounts.distributor;
         distributor.total_amount_claimed =
-            unwrap_int!(distributor.total_amount_claimed.checked_add(amount));
+            unwrap_int!(distributor.total_amount_claimed.checked_add(claim_amount));
         require!(
             distributor.total_amount_claimed <= distributor.max_total_claim,
             ExceededMaxClaim
@@ -159,6 +158,7 @@ pub mod merkle_distributor {
         );
 
         emit!(ClaimedEvent {
+            root: distributor.root,
             index,
             claimant: claimant_account.key(),
             claim_amount: claim_amount,
@@ -214,10 +214,6 @@ pub struct UpdateDistributor<'info> {
 
     #[account(mut, has_one = admin_auth @ ErrorCode::DistributorAdminMismatch)]
     pub distributor: Account<'info, MerkleDistributor>,
-
-    /// Payer to create the distributor.
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// [merkle_distributor::claim] accounts.
@@ -250,7 +246,7 @@ pub struct Claim<'info> {
     pub to: Account<'info, TokenAccount>,
 
     /// Who is claiming the tokens.
-    pub claimant: Signer<'info>,
+    pub claimant: UncheckedAccount<'info>,
 
     /// Payer of the claim.
     #[account(mut)]
@@ -271,9 +267,6 @@ pub struct UpdateAdminAuth<'info> {
 
     #[account(mut, has_one = admin_auth @ ErrorCode::DistributorAdminMismatch)]
     pub distributor: Account<'info, MerkleDistributor>,
-
-    #[account(mut)]
-    pub payer: Signer<'info>,
 }
 
 /// State for the account which distributes tokens.
@@ -289,7 +282,6 @@ pub struct MerkleDistributor {
 
     /// The 256-bit merkle root.
     pub root: [u8; 32],
-    pub root_version: u64,
 
     /// [Mint] of the token to be distributed.
     pub mint: Pubkey,
@@ -320,6 +312,7 @@ pub struct ClaimStatus {
 /// Emitted when tokens are claimed.
 #[event]
 pub struct ClaimedEvent {
+    pub root: [u8; 32],
     /// Index of the claim.
     pub index: u64,
     /// User that claimed.
