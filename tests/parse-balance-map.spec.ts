@@ -144,8 +144,7 @@ describe("parse BalanceMap", () => {
         try {
           await badTx.confirm();
         } catch (e) {
-          const err = (e as { errors: Error[] })
-            .errors[0] as SendTransactionError;
+          const err = e as SendTransactionError;
           expect(err.logs?.join(" ")).to.have.string(
             `Allocate: account Address { address: ${claimKey.toString()}, base: None } already in use`
           );
