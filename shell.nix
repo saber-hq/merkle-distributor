@@ -1,5 +1,6 @@
 { pkgs }:
-pkgs.mkShell {
+pkgs.stdenvNoCC.mkDerivation {
+  name = "shell";
   nativeBuiltInputs = (pkgs.lib.optionals pkgs.stdenv.isDarwin [
     pkgs.darwin.apple_sdk.frameworks.AppKit
     pkgs.darwin.apple_sdk.frameworks.IOKit
@@ -13,6 +14,7 @@ pkgs.mkShell {
       cargo-deps
       gh
       cargo-readme
+      nixpkgs-fmt
     ] ++ (pkgs.lib.optionals pkgs.stdenv.isDarwin [
       pkgs.darwin.apple_sdk.frameworks.AppKit
       pkgs.darwin.apple_sdk.frameworks.IOKit

@@ -54,7 +54,7 @@
   "lint-staged": {
     "*.{ts,tsx}": "eslint --cache --fix",
     "*.{js,jsx,json,html,css,md}": "prettier --write",
-    "*.nix": "nixfmt"
+    "*.nix": "nixpkgs-fmt"
   },
   "scripts": {
     "build": "tsc -P tsconfig.cjs.json && tsc -P tsconfig.build.json",
@@ -67,6 +67,7 @@
   },
   "dependencies": {
     "js-sha3": "^0.8.0",
+    "superstruct": "^0.15.4",
     "tiny-invariant": "^1.2.0",
     "tslib": "^2.3.1"
   },
