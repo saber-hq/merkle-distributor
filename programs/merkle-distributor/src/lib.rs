@@ -60,6 +60,8 @@ pub mod merkle_distributor {
         amount: u64,
         proof: Vec<[u8; 32]>,
     ) -> Result<()> {
+        assert_keys_neq!(ctx.accounts.from, ctx.accounts.to);
+
         let claim_status = &mut ctx.accounts.claim_status;
         invariant!(
             // This check is redundant, we should not be able to initialize a claim status account at the same key.
@@ -103,10 +105,7 @@ pub mod merkle_distributor {
                 distributor.mint
             );
         }
-        invariant!(
-            ctx.accounts.to.owner == claimant_account.key(),
-            OwnerMismatch
-        );
+        assert_keys_eq!(ctx.accounts.to.owner, claimant_account.key(), OwnerMismatch);
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -177,7 +176,10 @@ pub struct NewDistributor<'info> {
 #[instruction(_bump: u8, index: u64)]
 pub struct Claim<'info> {
     /// The [MerkleDistributor].
-    #[account(mut)]
+    #[account(
+        mut,
+        address = from.owner
+    )]
     pub distributor: Account<'info, MerkleDistributor>,
 
     /// Status of the claim.
@@ -203,6 +205,7 @@ pub struct Claim<'info> {
     pub to: Account<'info, TokenAccount>,
 
     /// Who is claiming the tokens.
+    #[account(address = to.owner @ ErrorCode::OwnerMismatch)]
     pub claimant: Signer<'info>,
 
     /// Payer of the claim.
