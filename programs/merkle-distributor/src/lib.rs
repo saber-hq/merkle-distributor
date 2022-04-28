@@ -20,7 +20,7 @@ use vipers::prelude::*;
 
 pub mod merkle_proof;
 
-declare_id!("MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8");
+declare_id!("MRKi5uGnqvNozwDvETj6xgdQzVgCP6FVL51LAzFX7rd");
 
 /// The [merkle_distributor] program.
 #[program]
@@ -38,6 +38,7 @@ pub mod merkle_distributor {
     ) -> Result<()> {
         let distributor = &mut ctx.accounts.distributor;
 
+        distributor.authority = ctx.accounts.authority.key();
         distributor.base = ctx.accounts.base.key();
         distributor.bump = unwrap_bump!(ctx, "distributor");
 
@@ -93,6 +94,7 @@ pub mod merkle_distributor {
 
         let seeds = [
             b"MerkleDistributor".as_ref(),
+            &distributor.authority.to_bytes(),
             &distributor.base.to_bytes(),
             &[ctx.accounts.distributor.bump],
         ];
@@ -139,12 +141,60 @@ pub mod merkle_distributor {
         });
         Ok(())
     }
+
+    /// Surrenders the tokens from [MerkleDistributor] back to authority
+    pub fn surrender_tokens(ctx: Context<SurrenderTokens>) -> Result<()> {
+        assert_keys_neq!(ctx.accounts.from, ctx.accounts.to);
+
+        let ref distributor = ctx.accounts.distributor;
+
+        let seeds = [
+            b"MerkleDistributor".as_ref(),
+            &distributor.authority.to_bytes(),
+            &distributor.base.to_bytes(),
+            &[ctx.accounts.distributor.bump],
+        ];
+
+        let refund_amount = ctx.accounts.from.amount;
+
+        // Transferring remaining tokens
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                token::Transfer {
+                    from: ctx.accounts.from.to_account_info(),
+                    to: ctx.accounts.to.to_account_info(),
+                    authority: ctx.accounts.distributor.to_account_info(),
+                },
+            )
+            .with_signer(&[&seeds[..]]),
+            refund_amount,
+        )?;
+
+        // Closing empty account
+        token::close_account(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                token::CloseAccount {
+                    account: ctx.accounts.from.to_account_info(),
+                    authority: ctx.accounts.distributor.to_account_info(),
+                    destination: ctx.accounts.authority.to_account_info(),
+                },
+            )
+            .with_signer(&[&seeds[..]]),
+        )?;
+
+        Ok(())
+    }
 }
 
 /// Accounts for [merkle_distributor::new_distributor].
 #[derive(Accounts)]
 pub struct NewDistributor<'info> {
-    /// Base key of the distributor.
+    /// Authority key of the distributor.
+    pub authority: Signer<'info>,
+
+    /// Base keypair
     pub base: Signer<'info>,
 
     /// [MerkleDistributor].
@@ -152,7 +202,8 @@ pub struct NewDistributor<'info> {
         init,
         seeds = [
             b"MerkleDistributor".as_ref(),
-            base.key().to_bytes().as_ref()
+            authority.key().to_bytes().as_ref(),
+            base.key().to_bytes().as_ref(),
         ],
         bump,
         space = 8 + MerkleDistributor::LEN,
@@ -219,12 +270,44 @@ pub struct Claim<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+/// [merkle_distributor::surrender_tokens] accounts.
+#[derive(Accounts)]
+pub struct SurrenderTokens<'info> {
+    /// Authority key of the distributor.
+    pub authority: Signer<'info>,
+
+    /// The [MerkleDistributor].
+    #[account(
+        mut,
+        address = from.owner,
+        has_one = authority,
+        close = authority
+    )]
+    pub distributor: Account<'info, MerkleDistributor>,
+
+    /// Distributor ATA containing the tokens to refund.
+    #[account(mut, constraint = from.owner.key().eq(&distributor.key()) @ ErrorCode::OwnerMismatch)]
+    pub from: Account<'info, TokenAccount>,
+
+    /// Authority ATA to refund the tokens.
+    #[account(mut, constraint = to.owner.key().eq(&authority.key()) @ ErrorCode::OwnerMismatch)]
+    pub to: Account<'info, TokenAccount>,
+
+    /// The [System] program.
+    pub system_program: Program<'info, System>,
+
+    /// SPL [Token] program.
+    pub token_program: Program<'info, Token>,
+}
+
 /// State for the account which distributes tokens.
 #[account]
 #[derive(Default)]
 pub struct MerkleDistributor {
     /// Base key used to generate the PDA.
     pub base: Pubkey,
+    /// Authority key used to generate the PDA.
+    pub authority: Pubkey,
     /// Bump seed.
     pub bump: u8,
 
@@ -244,7 +327,7 @@ pub struct MerkleDistributor {
 }
 
 impl MerkleDistributor {
-    pub const LEN: usize = PUBKEY_BYTES + 1 + 32 + PUBKEY_BYTES + 8 * 4;
+    pub const LEN: usize = PUBKEY_BYTES + PUBKEY_BYTES + 1 + 32 + PUBKEY_BYTES + 8 * 4;
 }
 
 /// Holds whether or not a claimant has claimed tokens.

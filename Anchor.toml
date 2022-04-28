@@ -8,20 +8,20 @@ seeds = true
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
-wallet = "./tests/test-key.json"
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
 
 [programs.mainnet]
-merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
+merkle_distributor = "MRKi5uGnqvNozwDvETj6xgdQzVgCP6FVL51LAzFX7rd"
 
 [programs.devnet]
-merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
+merkle_distributor = "MRKi5uGnqvNozwDvETj6xgdQzVgCP6FVL51LAzFX7rd"
 
 [programs.testnet]
-merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
+merkle_distributor = "MRKi5uGnqvNozwDvETj6xgdQzVgCP6FVL51LAzFX7rd"
 
 [programs.localnet]
-merkle_distributor = "MRKGLMizK9XSTaD1d1jbVkdHZbQVCSnPpYiTw9aKQv8"
+merkle_distributor = "MRKi5uGnqvNozwDvETj6xgdQzVgCP6FVL51LAzFX7rd"
 
 [scripts]
 test = "yarn mocha"
