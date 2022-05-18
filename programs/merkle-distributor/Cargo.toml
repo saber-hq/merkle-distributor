@@ -1,6 +1,6 @@
 [package]
 name = "merkle-distributor"
-version = "0.3.0"
+version = "0.3.3"
 description = "A Solana program for distributing tokens according to a Merkle root."
 edition = "2021"
 homepage = "https://saber.so"
@@ -24,6 +24,6 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "^0.22"
-anchor-spl = "^0.22"
+anchor-lang = ">=0.22, <=0.24"
+anchor-spl = ">=0.22, <=0.24"
 vipers = { version = "^2", features = ["spl-associated-token-account"] }

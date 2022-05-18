@@ -1,4 +1,4 @@
-import { Provider as AnchorProvider, setProvider } from "@project-serum/anchor";
+import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { expectTX } from "@saberhq/chai-solana";
 import type { Provider } from "@saberhq/solana-contrib";
 import { SolanaProvider, TransactionEnvelope } from "@saberhq/solana-contrib";

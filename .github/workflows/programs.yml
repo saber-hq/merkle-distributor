@@ -31,7 +31,7 @@ jobs:
           sudo apt-get install -y pkg-config build-essential libudev-dev
 
       # Install Cachix
-      - uses: cachix/install-nix-action@v16
+      - uses: cachix/install-nix-action@v17
         with:
           install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
           install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
@@ -46,7 +46,7 @@ jobs:
       # Install Solana
       - name: Cache Solana binaries
         id: solana-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3.0.1
         with:
           path: |
             ~/.cache/solana
@@ -66,7 +66,7 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Yarn Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3.0.1
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}

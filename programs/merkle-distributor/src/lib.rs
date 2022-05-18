@@ -14,7 +14,7 @@
 //!
 //! The Merkle distributor program and SDK is distributed under the GPL v3.0 license.
 
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::pubkey::PUBKEY_BYTES};
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 use vipers::prelude::*;
 
@@ -60,6 +60,8 @@ pub mod merkle_distributor {
         amount: u64,
         proof: Vec<[u8; 32]>,
     ) -> Result<()> {
+        assert_keys_neq!(ctx.accounts.from, ctx.accounts.to);
+
         let claim_status = &mut ctx.accounts.claim_status;
         invariant!(
             // This check is redundant, we should not be able to initialize a claim status account at the same key.
@@ -103,10 +105,7 @@ pub mod merkle_distributor {
                 distributor.mint
             );
         }
-        invariant!(
-            ctx.accounts.to.owner == claimant_account.key(),
-            OwnerMismatch
-        );
+        assert_keys_eq!(ctx.accounts.to.owner, claimant_account.key(), OwnerMismatch);
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -156,6 +155,7 @@ pub struct NewDistributor<'info> {
             base.key().to_bytes().as_ref()
         ],
         bump,
+        space = 8 + MerkleDistributor::LEN,
         payer = payer
     )]
     pub distributor: Account<'info, MerkleDistributor>,
@@ -176,7 +176,10 @@ pub struct NewDistributor<'info> {
 #[instruction(_bump: u8, index: u64)]
 pub struct Claim<'info> {
     /// The [MerkleDistributor].
-    #[account(mut)]
+    #[account(
+        mut,
+        address = from.owner
+    )]
     pub distributor: Account<'info, MerkleDistributor>,
 
     /// Status of the claim.
@@ -188,6 +191,7 @@ pub struct Claim<'info> {
             distributor.key().to_bytes().as_ref()
         ],
         bump,
+        space = 8 + ClaimStatus::LEN,
         payer = payer
     )]
     pub claim_status: Account<'info, ClaimStatus>,
@@ -201,6 +205,7 @@ pub struct Claim<'info> {
     pub to: Account<'info, TokenAccount>,
 
     /// Who is claiming the tokens.
+    #[account(address = to.owner @ ErrorCode::OwnerMismatch)]
     pub claimant: Signer<'info>,
 
     /// Payer of the claim.
@@ -238,6 +243,10 @@ pub struct MerkleDistributor {
     pub num_nodes_claimed: u64,
 }
 
+impl MerkleDistributor {
+    pub const LEN: usize = PUBKEY_BYTES + 1 + 32 + PUBKEY_BYTES + 8 * 4;
+}
+
 /// Holds whether or not a claimant has claimed tokens.
 ///
 /// TODO: this is probably better stored as the node that was verified.
@@ -252,6 +261,10 @@ pub struct ClaimStatus {
     pub claimed_at: i64,
     /// Amount of tokens claimed.
     pub amount: u64,
+}
+
+impl ClaimStatus {
+    pub const LEN: usize = 1 + PUBKEY_BYTES + 8 + 8;
 }
 
 /// Emitted when tokens are claimed.
