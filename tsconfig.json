@@ -6,5 +6,5 @@
     "types": ["mocha"],
     "resolveJsonModule": true
   },
-  "include": ["./src", "./tests", "scripts/"]
+  "include": ["./src", "./tests", "scripts/", ".eslintrc.cjs", ".mocharc.cjs"]
 }
