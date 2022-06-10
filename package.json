@@ -79,7 +79,7 @@
     "tslib": "^2.4.0"
   },
   "peerDependencies": {
-    "@project-serum/anchor": ">=0.22",
+    "@project-serum/anchor": ">=0.24",
     "@saberhq/anchor-contrib": "^1.13",
     "@saberhq/solana-contrib": "^1.13",
     "@saberhq/token-utils": "^1.13",
