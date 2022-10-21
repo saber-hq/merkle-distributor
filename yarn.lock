@@ -281,7 +281,7 @@ __metadata:
     "@types/chai": ^4.3.1
     "@types/eslint": ^8.4.3
     "@types/mocha": ^9.1.1
-    "@types/node": ^17.0.41
+    "@types/node": ^18.11.3
     bn.js: ^5.2.1
     chai: ^4.3.4
     eslint: ^8.17.0
@@ -631,10 +631,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^17.0.41":
-  version: 17.0.41
-  resolution: "@types/node@npm:17.0.41"
-  checksum: ddaf9e7decb487850a9bbfeb670b41c9d35c5b1597c4c4f889419b65042d776e9041ed533c7afc1bac30cad1e9dcfd984085b4a35312efe8ea5eaf0bd36a8191
+"@types/node@npm:^18.11.3":
+  version: 18.11.3
+  resolution: "@types/node@npm:18.11.3"
+  checksum: 3a2a9142d891a90a195c296149bf64a69cc0abcc42f543be911ab22b2e0ead85ff077f90af92f0f13f6e3e5e72501469200fd753dfd1101825d4646a89d3ee47
   languageName: node
   linkType: hard
 
